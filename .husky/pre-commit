@@ -1,0 +1,2 @@
+cd src/dev-tools-collection-web
+pnpm exec lint-staged
