@@ -1,7 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { getPopularTools, type Tool, toolsData } from '@/data/tools.ts';
-import PageSection from '@/components/PageSection';
 import SearchBar from '@/components/SearchBar.tsx';
 import ToolCard from '@/components/ToolCard.tsx';
 import Footer from '@/components/Footer.tsx';
