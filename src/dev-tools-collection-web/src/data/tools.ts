@@ -6,7 +6,8 @@ import {
 	Code,
 	Link,
 	Hash,
-	QrCode
+	QrCode,
+	FileCode
 } from 'lucide-react';
 import type { ForwardRefExoticComponent, RefAttributes } from 'react';
 
@@ -68,6 +69,13 @@ export const toolsData: Tool[] = [
 		name: '哈希编码工具',
 		icon: Hash,
 		url: '/tools/hash-encoder',
+		popular: true
+	},
+	{
+		id: 'html-preview',
+		name: 'HTML 在线预览',
+		icon: FileCode,
+		url: '/tools/html-preview',
 		popular: true
 	}
 ];

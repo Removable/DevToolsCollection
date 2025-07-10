@@ -15,6 +15,7 @@ import { Route as ToolsUrlCodecRouteImport } from './routes/tools/url-codec'
 import { Route as ToolsTimestampRouteImport } from './routes/tools/timestamp'
 import { Route as ToolsQrcodeGeneratorRouteImport } from './routes/tools/qrcode-generator'
 import { Route as ToolsJsonFormatterRouteImport } from './routes/tools/json-formatter'
+import { Route as ToolsHtmlPreviewRouteImport } from './routes/tools/html-preview'
 import { Route as ToolsHashEncoderRouteImport } from './routes/tools/hash-encoder'
 import { Route as ToolsBase64CodecRouteImport } from './routes/tools/base64-codec'
 
@@ -48,6 +49,11 @@ const ToolsJsonFormatterRoute = ToolsJsonFormatterRouteImport.update({
   path: '/tools/json-formatter',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsHtmlPreviewRoute = ToolsHtmlPreviewRouteImport.update({
+  id: '/tools/html-preview',
+  path: '/tools/html-preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToolsHashEncoderRoute = ToolsHashEncoderRouteImport.update({
   id: '/tools/hash-encoder',
   path: '/tools/hash-encoder',
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/tools/base64-codec': typeof ToolsBase64CodecRoute
   '/tools/hash-encoder': typeof ToolsHashEncoderRoute
+  '/tools/html-preview': typeof ToolsHtmlPreviewRoute
   '/tools/json-formatter': typeof ToolsJsonFormatterRoute
   '/tools/qrcode-generator': typeof ToolsQrcodeGeneratorRoute
   '/tools/timestamp': typeof ToolsTimestampRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/tools/base64-codec': typeof ToolsBase64CodecRoute
   '/tools/hash-encoder': typeof ToolsHashEncoderRoute
+  '/tools/html-preview': typeof ToolsHtmlPreviewRoute
   '/tools/json-formatter': typeof ToolsJsonFormatterRoute
   '/tools/qrcode-generator': typeof ToolsQrcodeGeneratorRoute
   '/tools/timestamp': typeof ToolsTimestampRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/tools/base64-codec': typeof ToolsBase64CodecRoute
   '/tools/hash-encoder': typeof ToolsHashEncoderRoute
+  '/tools/html-preview': typeof ToolsHtmlPreviewRoute
   '/tools/json-formatter': typeof ToolsJsonFormatterRoute
   '/tools/qrcode-generator': typeof ToolsQrcodeGeneratorRoute
   '/tools/timestamp': typeof ToolsTimestampRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/tools/base64-codec'
     | '/tools/hash-encoder'
+    | '/tools/html-preview'
     | '/tools/json-formatter'
     | '/tools/qrcode-generator'
     | '/tools/timestamp'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/tools/base64-codec'
     | '/tools/hash-encoder'
+    | '/tools/html-preview'
     | '/tools/json-formatter'
     | '/tools/qrcode-generator'
     | '/tools/timestamp'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/tools/base64-codec'
     | '/tools/hash-encoder'
+    | '/tools/html-preview'
     | '/tools/json-formatter'
     | '/tools/qrcode-generator'
     | '/tools/timestamp'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ToolsBase64CodecRoute: typeof ToolsBase64CodecRoute
   ToolsHashEncoderRoute: typeof ToolsHashEncoderRoute
+  ToolsHtmlPreviewRoute: typeof ToolsHtmlPreviewRoute
   ToolsJsonFormatterRoute: typeof ToolsJsonFormatterRoute
   ToolsQrcodeGeneratorRoute: typeof ToolsQrcodeGeneratorRoute
   ToolsTimestampRoute: typeof ToolsTimestampRoute
@@ -178,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsJsonFormatterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tools/html-preview': {
+      id: '/tools/html-preview'
+      path: '/tools/html-preview'
+      fullPath: '/tools/html-preview'
+      preLoaderRoute: typeof ToolsHtmlPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tools/hash-encoder': {
       id: '/tools/hash-encoder'
       path: '/tools/hash-encoder'
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ToolsBase64CodecRoute: ToolsBase64CodecRoute,
   ToolsHashEncoderRoute: ToolsHashEncoderRoute,
+  ToolsHtmlPreviewRoute: ToolsHtmlPreviewRoute,
   ToolsJsonFormatterRoute: ToolsJsonFormatterRoute,
   ToolsQrcodeGeneratorRoute: ToolsQrcodeGeneratorRoute,
   ToolsTimestampRoute: ToolsTimestampRoute,
