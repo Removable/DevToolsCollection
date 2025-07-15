@@ -16,6 +16,7 @@ import { Route as ToolsTimestampRouteImport } from './routes/tools/timestamp'
 import { Route as ToolsRegexTesterRouteImport } from './routes/tools/regex-tester'
 import { Route as ToolsQrcodeGeneratorRouteImport } from './routes/tools/qrcode-generator'
 import { Route as ToolsJsonFormatterRouteImport } from './routes/tools/json-formatter'
+import { Route as ToolsIpInfoRouteImport } from './routes/tools/ip-info'
 import { Route as ToolsHtmlPreviewRouteImport } from './routes/tools/html-preview'
 import { Route as ToolsHashEncoderRouteImport } from './routes/tools/hash-encoder'
 import { Route as ToolsBase64CodecRouteImport } from './routes/tools/base64-codec'
@@ -55,6 +56,11 @@ const ToolsJsonFormatterRoute = ToolsJsonFormatterRouteImport.update({
   path: '/tools/json-formatter',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsIpInfoRoute = ToolsIpInfoRouteImport.update({
+  id: '/tools/ip-info',
+  path: '/tools/ip-info',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToolsHtmlPreviewRoute = ToolsHtmlPreviewRouteImport.update({
   id: '/tools/html-preview',
   path: '/tools/html-preview',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/tools/base64-codec': typeof ToolsBase64CodecRoute
   '/tools/hash-encoder': typeof ToolsHashEncoderRoute
   '/tools/html-preview': typeof ToolsHtmlPreviewRoute
+  '/tools/ip-info': typeof ToolsIpInfoRoute
   '/tools/json-formatter': typeof ToolsJsonFormatterRoute
   '/tools/qrcode-generator': typeof ToolsQrcodeGeneratorRoute
   '/tools/regex-tester': typeof ToolsRegexTesterRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/tools/base64-codec': typeof ToolsBase64CodecRoute
   '/tools/hash-encoder': typeof ToolsHashEncoderRoute
   '/tools/html-preview': typeof ToolsHtmlPreviewRoute
+  '/tools/ip-info': typeof ToolsIpInfoRoute
   '/tools/json-formatter': typeof ToolsJsonFormatterRoute
   '/tools/qrcode-generator': typeof ToolsQrcodeGeneratorRoute
   '/tools/regex-tester': typeof ToolsRegexTesterRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/tools/base64-codec': typeof ToolsBase64CodecRoute
   '/tools/hash-encoder': typeof ToolsHashEncoderRoute
   '/tools/html-preview': typeof ToolsHtmlPreviewRoute
+  '/tools/ip-info': typeof ToolsIpInfoRoute
   '/tools/json-formatter': typeof ToolsJsonFormatterRoute
   '/tools/qrcode-generator': typeof ToolsQrcodeGeneratorRoute
   '/tools/regex-tester': typeof ToolsRegexTesterRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/tools/base64-codec'
     | '/tools/hash-encoder'
     | '/tools/html-preview'
+    | '/tools/ip-info'
     | '/tools/json-formatter'
     | '/tools/qrcode-generator'
     | '/tools/regex-tester'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/tools/base64-codec'
     | '/tools/hash-encoder'
     | '/tools/html-preview'
+    | '/tools/ip-info'
     | '/tools/json-formatter'
     | '/tools/qrcode-generator'
     | '/tools/regex-tester'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/tools/base64-codec'
     | '/tools/hash-encoder'
     | '/tools/html-preview'
+    | '/tools/ip-info'
     | '/tools/json-formatter'
     | '/tools/qrcode-generator'
     | '/tools/regex-tester'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   ToolsBase64CodecRoute: typeof ToolsBase64CodecRoute
   ToolsHashEncoderRoute: typeof ToolsHashEncoderRoute
   ToolsHtmlPreviewRoute: typeof ToolsHtmlPreviewRoute
+  ToolsIpInfoRoute: typeof ToolsIpInfoRoute
   ToolsJsonFormatterRoute: typeof ToolsJsonFormatterRoute
   ToolsQrcodeGeneratorRoute: typeof ToolsQrcodeGeneratorRoute
   ToolsRegexTesterRoute: typeof ToolsRegexTesterRoute
@@ -211,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsJsonFormatterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tools/ip-info': {
+      id: '/tools/ip-info'
+      path: '/tools/ip-info'
+      fullPath: '/tools/ip-info'
+      preLoaderRoute: typeof ToolsIpInfoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tools/html-preview': {
       id: '/tools/html-preview'
       path: '/tools/html-preview'
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   ToolsBase64CodecRoute: ToolsBase64CodecRoute,
   ToolsHashEncoderRoute: ToolsHashEncoderRoute,
   ToolsHtmlPreviewRoute: ToolsHtmlPreviewRoute,
+  ToolsIpInfoRoute: ToolsIpInfoRoute,
   ToolsJsonFormatterRoute: ToolsJsonFormatterRoute,
   ToolsQrcodeGeneratorRoute: ToolsQrcodeGeneratorRoute,
   ToolsRegexTesterRoute: ToolsRegexTesterRoute,

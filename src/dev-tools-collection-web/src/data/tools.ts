@@ -8,7 +8,8 @@ import {
 	Hash,
 	QrCode,
 	FileCode,
-	Regex
+	Regex,
+	Globe
 } from 'lucide-react';
 import type { ForwardRefExoticComponent, RefAttributes } from 'react';
 
@@ -84,6 +85,13 @@ export const toolsData: Tool[] = [
 		name: '正则表达式',
 		icon: Regex,
 		url: '/tools/regex-tester',
+		popular: true
+	},
+	{
+		id: 'ip-info',
+		name: 'IP 信息查看',
+		icon: Globe,
+		url: '/tools/ip-info',
 		popular: true
 	}
 ];
