@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useToggle } from '@uidotdev/usehooks';
 
 const LanguageSwitcher = () => {
 	const { i18n } = useTranslation();
 	const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
-	const [on, toggle] = useToggle(true);
+	const [on, toggle] = useToggle(i18n.language === 'en');
 
 	useEffect(() => {
 		setCurrentLanguage(i18n.language);

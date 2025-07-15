@@ -5,6 +5,7 @@ export default {
 		searchResults: '搜索结果',
 		allTools: '所有工具',
 		tool: '工具',
+		home: '首页',
 		copyright: '© {{year}} 工具箱. 保留所有权利。',
 		searchPlaceholder: '搜索工具，如：JSON 格式化、时间戳转换...'
 	},
