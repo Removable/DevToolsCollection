@@ -6,6 +6,7 @@ export default {
 		searchResults: 'Search Results',
 		allTools: 'All Tools',
 		tool: 'Tool',
+		home: 'Home',
 		copyright: '© {{year}} Toolbox. All rights reserved.',
 		searchPlaceholder:
 			'Search tools, e.g.: JSON Formatter, Timestamp Converter...'
