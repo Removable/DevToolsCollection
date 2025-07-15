@@ -67,8 +67,8 @@ function formatHTML(html: string): string {
 function formatCSS(css: string): string {
 	// 移除多余空格和注释
 	css = css.replace(/\/\*[\s\S]*?\*\//g, '');
-	css = css.replace(/([^0-9a-zA-Z\.#])\s+/g, '$1');
-	css = css.replace(/\s+([^0-9a-zA-Z\.#]+)/g, '$1');
+	css = css.replace(/([^0-9a-zA-Z.#])\s+/g, '$1');
+	css = css.replace(/\s+([^0-9a-zA-Z.#]+)/g, '$1');
 	css = css.replace(/;}/g, '}');
 
 	// 添加适当的换行和缩进
@@ -145,11 +145,6 @@ function RouteComponent() {
 	// 创建一个安全的HTML预览
 	const [previewSrc, setPreviewSrc] = useState<string>('');
 
-	// 更新预览
-	useEffect(() => {
-		updatePreview(code);
-	}, [code]);
-
 	// 更新预览内容
 	const updatePreview = useCallback((htmlCode: string) => {
 		// 确保HTML包含正确的字符集声明
@@ -194,6 +189,11 @@ function RouteComponent() {
 			URL.revokeObjectURL(url);
 		};
 	}, []);
+
+	// 更新预览
+	useEffect(() => {
+		updatePreview(code);
+	}, [code, updatePreview]);
 
 	// 格式化代码
 	const handleFormat = useCallback(() => {

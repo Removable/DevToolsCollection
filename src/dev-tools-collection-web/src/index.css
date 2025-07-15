@@ -120,12 +120,19 @@
 	}
 }
 
-body {
+html {
 	width: 100vw;
 	height: 100vh;
+	overflow-x: hidden;
+	overflow-y: auto;
 }
 
-#root {
+#root,
+body {
 	width: 100%;
 	height: 100%;
 }
+
+/** {*/
+/*	outline: 1px solid red !important;*/
+/*}*/

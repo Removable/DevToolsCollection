@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsUuidGeneratorRouteImport } from './routes/tools/uuid-generator'
 import { Route as ToolsUrlCodecRouteImport } from './routes/tools/url-codec'
 import { Route as ToolsTimestampRouteImport } from './routes/tools/timestamp'
+import { Route as ToolsRegexTesterRouteImport } from './routes/tools/regex-tester'
 import { Route as ToolsQrcodeGeneratorRouteImport } from './routes/tools/qrcode-generator'
 import { Route as ToolsJsonFormatterRouteImport } from './routes/tools/json-formatter'
 import { Route as ToolsHtmlPreviewRouteImport } from './routes/tools/html-preview'
@@ -37,6 +38,11 @@ const ToolsUrlCodecRoute = ToolsUrlCodecRouteImport.update({
 const ToolsTimestampRoute = ToolsTimestampRouteImport.update({
   id: '/tools/timestamp',
   path: '/tools/timestamp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToolsRegexTesterRoute = ToolsRegexTesterRouteImport.update({
+  id: '/tools/regex-tester',
+  path: '/tools/regex-tester',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ToolsQrcodeGeneratorRoute = ToolsQrcodeGeneratorRouteImport.update({
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/tools/html-preview': typeof ToolsHtmlPreviewRoute
   '/tools/json-formatter': typeof ToolsJsonFormatterRoute
   '/tools/qrcode-generator': typeof ToolsQrcodeGeneratorRoute
+  '/tools/regex-tester': typeof ToolsRegexTesterRoute
   '/tools/timestamp': typeof ToolsTimestampRoute
   '/tools/url-codec': typeof ToolsUrlCodecRoute
   '/tools/uuid-generator': typeof ToolsUuidGeneratorRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/tools/html-preview': typeof ToolsHtmlPreviewRoute
   '/tools/json-formatter': typeof ToolsJsonFormatterRoute
   '/tools/qrcode-generator': typeof ToolsQrcodeGeneratorRoute
+  '/tools/regex-tester': typeof ToolsRegexTesterRoute
   '/tools/timestamp': typeof ToolsTimestampRoute
   '/tools/url-codec': typeof ToolsUrlCodecRoute
   '/tools/uuid-generator': typeof ToolsUuidGeneratorRoute
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/tools/html-preview': typeof ToolsHtmlPreviewRoute
   '/tools/json-formatter': typeof ToolsJsonFormatterRoute
   '/tools/qrcode-generator': typeof ToolsQrcodeGeneratorRoute
+  '/tools/regex-tester': typeof ToolsRegexTesterRoute
   '/tools/timestamp': typeof ToolsTimestampRoute
   '/tools/url-codec': typeof ToolsUrlCodecRoute
   '/tools/uuid-generator': typeof ToolsUuidGeneratorRoute
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/tools/html-preview'
     | '/tools/json-formatter'
     | '/tools/qrcode-generator'
+    | '/tools/regex-tester'
     | '/tools/timestamp'
     | '/tools/url-codec'
     | '/tools/uuid-generator'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/tools/html-preview'
     | '/tools/json-formatter'
     | '/tools/qrcode-generator'
+    | '/tools/regex-tester'
     | '/tools/timestamp'
     | '/tools/url-codec'
     | '/tools/uuid-generator'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/tools/html-preview'
     | '/tools/json-formatter'
     | '/tools/qrcode-generator'
+    | '/tools/regex-tester'
     | '/tools/timestamp'
     | '/tools/url-codec'
     | '/tools/uuid-generator'
@@ -142,6 +154,7 @@ export interface RootRouteChildren {
   ToolsHtmlPreviewRoute: typeof ToolsHtmlPreviewRoute
   ToolsJsonFormatterRoute: typeof ToolsJsonFormatterRoute
   ToolsQrcodeGeneratorRoute: typeof ToolsQrcodeGeneratorRoute
+  ToolsRegexTesterRoute: typeof ToolsRegexTesterRoute
   ToolsTimestampRoute: typeof ToolsTimestampRoute
   ToolsUrlCodecRoute: typeof ToolsUrlCodecRoute
   ToolsUuidGeneratorRoute: typeof ToolsUuidGeneratorRoute
@@ -175,6 +188,13 @@ declare module '@tanstack/react-router' {
       path: '/tools/timestamp'
       fullPath: '/tools/timestamp'
       preLoaderRoute: typeof ToolsTimestampRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/regex-tester': {
+      id: '/tools/regex-tester'
+      path: '/tools/regex-tester'
+      fullPath: '/tools/regex-tester'
+      preLoaderRoute: typeof ToolsRegexTesterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tools/qrcode-generator': {
@@ -222,6 +242,7 @@ const rootRouteChildren: RootRouteChildren = {
   ToolsHtmlPreviewRoute: ToolsHtmlPreviewRoute,
   ToolsJsonFormatterRoute: ToolsJsonFormatterRoute,
   ToolsQrcodeGeneratorRoute: ToolsQrcodeGeneratorRoute,
+  ToolsRegexTesterRoute: ToolsRegexTesterRoute,
   ToolsTimestampRoute: ToolsTimestampRoute,
   ToolsUrlCodecRoute: ToolsUrlCodecRoute,
   ToolsUuidGeneratorRoute: ToolsUuidGeneratorRoute,

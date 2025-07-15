@@ -16,7 +16,7 @@ function ToolPageLayout(props: ToolPageLayoutProps): ReactElement {
 
 	return (
 		<div className='flex min-h-full w-full flex-col'>
-			<main className='h-36 w-full flex-grow'>
+			<main className='h-fit min-h-36 w-full flex-grow'>
 				<ToolPageHeader title={toolName} />
 				<section className='container mx-auto w-full px-4 py-8'>
 					{children}

@@ -1,13 +1,14 @@
 import {
 	Clock,
-	FileJson,
+	Braces,
 	type LucideProps,
 	RotateCcwKey,
 	Code,
 	Link,
 	Hash,
 	QrCode,
-	FileCode
+	FileCode,
+	Regex
 } from 'lucide-react';
 import type { ForwardRefExoticComponent, RefAttributes } from 'react';
 
@@ -25,7 +26,7 @@ export const toolsData: Tool[] = [
 	{
 		id: 'json-formatter',
 		name: 'JSON 格式化',
-		icon: FileJson,
+		icon: Braces,
 		url: '/tools/json-formatter',
 		popular: true
 	},
@@ -76,6 +77,13 @@ export const toolsData: Tool[] = [
 		name: 'HTML 在线预览',
 		icon: FileCode,
 		url: '/tools/html-preview',
+		popular: true
+	},
+	{
+		id: 'regex-tester',
+		name: '正则表达式',
+		icon: Regex,
+		url: '/tools/regex-tester',
 		popular: true
 	}
 ];
