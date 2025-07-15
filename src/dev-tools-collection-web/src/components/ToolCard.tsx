@@ -1,12 +1,15 @@
 import { Card, CardContent } from '@/components/ui/card';
 import type { Tool } from '../data/tools';
 import { Link } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 
 interface ToolCardProps {
 	tool: Tool;
 }
 
 const ToolCard = ({ tool }: ToolCardProps) => {
+	const { t } = useTranslation();
+
 	return (
 		<Link to={tool.url} className='block'>
 			<Card className='hover:border-primary/30 bg-card/50 h-full backdrop-blur-[1px] transition-all duration-200 hover:shadow-md'>
@@ -16,7 +19,7 @@ const ToolCard = ({ tool }: ToolCardProps) => {
 							<tool.icon className='text-primary h-5 w-5' />
 						</div>
 						<h3 className='text-center font-mono text-base font-medium'>
-							{tool.name}
+							{t(`tools.${tool.id}`)}
 						</h3>
 					</div>
 				</CardContent>

@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { searchTools, type Tool } from '@/data/tools.ts';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input.tsx';
+import { useTranslation } from 'react-i18next';
 
 interface SearchBarProps {
 	onSearchResults: (results: Tool[]) => void;
 }
 
 const SearchBar = ({ onSearchResults }: SearchBarProps) => {
+	const { t } = useTranslation();
 	const [query, setQuery] = useState<string>('');
 
 	useEffect(() => {
@@ -32,7 +34,7 @@ const SearchBar = ({ onSearchResults }: SearchBarProps) => {
 				/>
 				<Input
 					type='text'
-					placeholder='搜索工具，如：JSON 格式化、时间戳转换...'
+					placeholder={t('common.searchPlaceholder')}
 					className='bg-background/80 w-full rounded-lg border py-6 pr-4 pl-10 text-black shadow-sm backdrop-blur-sm focus-visible:ring-white'
 					value={query}
 					onChange={e => setQuery(e.target.value)}

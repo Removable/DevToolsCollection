@@ -16,12 +16,14 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/tools/base64-codec')({
 	component: RouteComponent
 });
 
 function RouteComponent() {
+	const { t } = useTranslation();
 	const [inputText, setInputText] = useState<string>('');
 	const [outputText, setOutputText] = useState<string>('');
 	const [mode, setMode] = useState<'encode' | 'decode' | 'file'>('encode');
@@ -42,7 +44,7 @@ function RouteComponent() {
 	const encodeBase64 = useCallback(() => {
 		try {
 			if (!inputText.trim()) {
-				toast.error('请先输入需要编码的文本');
+				toast.error(t('base64Codec.noInputText'));
 				return;
 			}
 
@@ -67,19 +69,24 @@ function RouteComponent() {
 			}
 
 			setOutputText(base64String);
-			toast.success('编码成功');
+			toast.success(t('base64Codec.encodeSuccess'));
 		} catch (error) {
 			toast.error(
-				'编码失败: ' + (error instanceof Error ? error.message : '未知错误')
+				t('base64Codec.encodeError', {
+					error:
+						error instanceof Error
+							? error.message
+							: t('base64Codec.unknownError')
+				})
 			);
 		}
-	}, [inputText, urlSafe, dataUriFormat]);
+	}, [inputText, urlSafe, dataUriFormat, t]);
 
 	// Base64 decoding function
 	const decodeBase64 = useCallback(() => {
 		try {
 			if (!inputText.trim()) {
-				toast.error('请先输入需要解码的Base64文本');
+				toast.error(t('base64Codec.noInputBase64'));
 				return;
 			}
 
@@ -115,35 +122,42 @@ function RouteComponent() {
 			const decodedText = decoder.decode(bytes);
 
 			setOutputText(decodedText);
-			toast.success('解码成功');
+			toast.success(t('base64Codec.decodeSuccess'));
 		} catch (error) {
 			toast.error(
-				'解码失败: ' +
-					(error instanceof Error ? error.message : '无效的Base64字符串')
+				t('base64Codec.decodeError', {
+					error:
+						error instanceof Error
+							? error.message
+							: t('base64Codec.invalidBase64')
+				})
 			);
 		}
-	}, [inputText, urlSafe]);
+	}, [inputText, urlSafe, t]);
 
 	// Handle file selection
-	const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0] || null;
-		if (file) {
-			setSelectedFile(file);
-			setFileName(file.name);
-			toast.success(`已选择文件: ${file.name}`);
-		}
-	}, []);
+	const handleFileChange = useCallback(
+		(e: ChangeEvent<HTMLInputElement>) => {
+			const file = e.target.files?.[0] || null;
+			if (file) {
+				setSelectedFile(file);
+				setFileName(file.name);
+				toast.success(t('base64Codec.fileSelected', { name: file.name }));
+			}
+		},
+		[t]
+	);
 
 	// Handle file upload and encoding
 	const handleFileUpload = useCallback(() => {
 		if (!selectedFile) {
-			toast.error('请先选择文件');
+			toast.error(t('base64Codec.noFile'));
 			return;
 		}
 
 		// Check file size (limit to 5MB)
 		if (selectedFile.size > 5 * 1024 * 1024) {
-			toast.error('文件大小不能超过5MB');
+			toast.error(t('base64Codec.fileSizeExceeded'));
 			return;
 		}
 
@@ -152,7 +166,7 @@ function RouteComponent() {
 		reader.onload = event => {
 			try {
 				if (!event.target?.result) {
-					toast.error('读取文件失败');
+					toast.error(t('base64Codec.fileReadError'));
 					return;
 				}
 
@@ -184,21 +198,26 @@ function RouteComponent() {
 				}
 
 				setOutputText(base64String);
-				toast.success('文件编码成功');
+				toast.success(t('base64Codec.fileEncodeSuccess'));
 			} catch (error) {
 				toast.error(
-					'编码失败: ' + (error instanceof Error ? error.message : '未知错误')
+					t('base64Codec.encodeError', {
+						error:
+							error instanceof Error
+								? error.message
+								: t('base64Codec.unknownError')
+					})
 				);
 			}
 		};
 
 		reader.onerror = () => {
-			toast.error('读取文件失败');
+			toast.error(t('base64Codec.fileReadError'));
 		};
 
 		// Read the file as ArrayBuffer
 		reader.readAsArrayBuffer(selectedFile);
-	}, [selectedFile, urlSafe, dataUriFormat]);
+	}, [selectedFile, urlSafe, dataUriFormat, t]);
 
 	// Process function based on the current mode
 	const processData = useCallback(() => {
@@ -220,17 +239,17 @@ function RouteComponent() {
 	// Copy output to clipboard
 	const handleCopy = useCallback(() => {
 		if (!outputText) {
-			toast.error('没有可复制的内容');
+			toast.error(t('base64Codec.noCopyContent'));
 			return;
 		}
 
 		try {
 			void navigator.clipboard.writeText(outputText);
-			toast.success('已复制到剪贴板');
+			toast.success(t('base64Codec.copiedToClipboard'));
 		} catch {
-			toast.error('复制到剪贴板失败');
+			toast.error(t('base64Codec.copyFailed'));
 		}
-	}, [outputText]);
+	}, [outputText, t]);
 
 	return (
 		<ToolPageLayout>
@@ -256,9 +275,15 @@ function RouteComponent() {
 							className='w-full'
 						>
 							<TabsList className='grid w-full grid-cols-3'>
-								<TabsTrigger value='encode'>文本编码</TabsTrigger>
-								<TabsTrigger value='file'>文件编码</TabsTrigger>
-								<TabsTrigger value='decode'>Base64 解码</TabsTrigger>
+								<TabsTrigger value='encode'>
+									{t('base64Codec.textEncode')}
+								</TabsTrigger>
+								<TabsTrigger value='file'>
+									{t('base64Codec.fileEncode')}
+								</TabsTrigger>
+								<TabsTrigger value='decode'>
+									{t('base64Codec.decode')}
+								</TabsTrigger>
 							</TabsList>
 						</Tabs>
 
@@ -271,8 +296,7 @@ function RouteComponent() {
 									onCheckedChange={checked => setUrlSafe(!!checked)}
 								/>
 								<Label htmlFor='urlSafe' className='cursor-pointer text-sm'>
-									URL 安全模式 (使用 &#39;-&#39; 和 &#39;_&#39; 替代 &#39;+&#39;
-									和 &#39;/&#39;)
+									{t('base64Codec.urlSafeMode')}
 								</Label>
 							</div>
 							<div
@@ -289,7 +313,7 @@ function RouteComponent() {
 									htmlFor='dataUriFormat'
 									className='cursor-pointer text-sm'
 								>
-									Data URI 格式 (输出 data:[mediatype];base64,{'{data}'} 格式)
+									{t('base64Codec.dataUriFormat')}
 								</Label>
 							</div>
 						</div>
@@ -298,7 +322,9 @@ function RouteComponent() {
 						{(mode === 'encode' || mode === 'decode') && (
 							<div className='space-y-2'>
 								<Label htmlFor='input' className='text-sm font-medium'>
-									{mode === 'encode' ? '输入文本' : '输入 Base64'}
+									{mode === 'encode'
+										? t('base64Codec.inputText')
+										: t('base64Codec.inputBase64')}
 								</Label>
 								<div className='bg-background/80 rounded-md border p-1 shadow-sm'>
 									<Textarea
@@ -308,8 +334,8 @@ function RouteComponent() {
 										onChange={e => setInputText(e.target.value)}
 										placeholder={
 											mode === 'encode'
-												? '输入需要编码的文本...'
-												: '输入需要解码的Base64文本...'
+												? t('base64Codec.inputTextPlaceholder')
+												: t('base64Codec.inputBase64Placeholder')
 										}
 									/>
 								</div>
@@ -319,7 +345,9 @@ function RouteComponent() {
 						{/* File Upload Section (only visible in file mode) */}
 						{mode === 'file' && (
 							<div className='space-y-2'>
-								<Label className='text-sm font-medium'>上传文件进行编码</Label>
+								<Label className='text-sm font-medium'>
+									{t('base64Codec.uploadFile')}
+								</Label>
 								<div className='flex flex-col space-y-2'>
 									<div className='flex items-center gap-2'>
 										<Input
@@ -335,7 +363,8 @@ function RouteComponent() {
 											onClick={() => fileInputRef.current?.click()}
 											className='flex items-center gap-2'
 										>
-											<Upload className='h-4 w-4' /> 选择文件
+											<Upload className='h-4 w-4' />{' '}
+											{t('base64Codec.selectFile')}
 										</Button>
 									</div>
 									{fileName && (
@@ -344,7 +373,7 @@ function RouteComponent() {
 										</div>
 									)}
 									<p className='text-muted-foreground text-xs'>
-										支持所有文件类型，最大文件大小: 5MB
+										{t('base64Codec.fileSupport')}
 									</p>
 								</div>
 							</div>
@@ -357,10 +386,10 @@ function RouteComponent() {
 								className='flex items-center justify-center gap-2'
 							>
 								{mode === 'encode'
-									? '编码'
+									? t('base64Codec.encode')
 									: mode === 'file'
-										? '编码文件'
-										: '解码'}
+										? t('base64Codec.encodeFile')
+										: t('base64Codec.decode')}
 							</Button>
 							{mode !== 'file' && (
 								<Button
@@ -369,7 +398,7 @@ function RouteComponent() {
 									className='flex items-center justify-center gap-2'
 									disabled={!outputText}
 								>
-									<ArrowDownUp className='h-4 w-4' /> 交换
+									<ArrowDownUp className='h-4 w-4' /> {t('base64Codec.swap')}
 								</Button>
 							)}
 							<Button
@@ -378,7 +407,7 @@ function RouteComponent() {
 								className='flex items-center justify-center gap-2'
 								disabled={!outputText}
 							>
-								<Clipboard className='h-4 w-4' /> 复制结果
+								<Clipboard className='h-4 w-4' /> {t('base64Codec.copyResult')}
 							</Button>
 						</div>
 
@@ -386,10 +415,10 @@ function RouteComponent() {
 						<div className='space-y-2'>
 							<Label htmlFor='output' className='text-sm font-medium'>
 								{mode === 'encode'
-									? 'Base64 结果'
+									? t('base64Codec.base64Result')
 									: mode === 'file'
-										? '文件 Base64 结果'
-										: '解码结果'}
+										? t('base64Codec.fileBase64Result')
+										: t('base64Codec.decodeResult')}
 							</Label>
 							<div className='bg-background/80 rounded-md border p-1 shadow-sm'>
 								<Textarea
@@ -399,10 +428,10 @@ function RouteComponent() {
 									readOnly
 									placeholder={
 										mode === 'encode'
-											? 'Base64 编码结果...'
+											? t('base64Codec.base64ResultPlaceholder')
 											: mode === 'file'
-												? '文件编码结果...'
-												: '解码后的文本...'
+												? t('base64Codec.fileResultPlaceholder')
+												: t('base64Codec.decodeResultPlaceholder')
 									}
 								/>
 							</div>

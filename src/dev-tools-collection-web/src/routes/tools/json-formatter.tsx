@@ -21,6 +21,7 @@ import { whiteLight } from '@uiw/codemirror-theme-white';
 import { EditorView, Decoration, type DecorationSet } from '@codemirror/view';
 import { StateField, StateEffect } from '@codemirror/state';
 import { linter, type Diagnostic } from '@codemirror/lint';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/tools/json-formatter')({
 	component: RouteComponent
@@ -60,13 +61,14 @@ const errorLineField = StateField.define<DecorationSet>({
 
 const getJsonErrorInfo = (
 	error: unknown,
-	jsonString: string
+	jsonString: string,
+	t: (key: string, options?: never) => string
 ): ErrorInfo | null => {
 	if (error instanceof JSONError) {
 		let line = 1;
 		let column = 1;
 		let position = 0;
-		let message = '无效的 JSON 格式';
+		let message = t('jsonFormatter.invalidJson');
 
 		if (error.message) {
 			// console.log('cause:', error['cause']);
@@ -83,17 +85,17 @@ const getJsonErrorInfo = (
 				if (matchError && matchError[0]) {
 					const errorPart = matchError[0].replace(/\.\.\."|"\.\.\./g, '');
 					position = jsonString.indexOf(errorPart);
-					// 计算行和列
+					// Calculate line and column
 					const lines = jsonString.slice(0, position).split('\n');
 					line = lines.length;
-					// 获取第<line>行的完整内容
+					// Get the complete content of line <line>
 					const lineContent = jsonString.split('\n')[line - 1];
-					// 获取第<line>行的中第一个冒号的位置
+					// Get the position of the first colon in line <line>
 					const colonIndex = lineContent.indexOf(':');
-					position += 10; // 修正位置
+					position += 10; // Position correction
 					column = colonIndex + 1;
 
-					message = `无效的 JSON 格式: ${errorPart}`;
+					message = `${t('jsonFormatter.invalidJson')}: ${errorPart}`;
 				}
 			}
 
@@ -111,32 +113,35 @@ const getJsonErrorInfo = (
 	return null;
 };
 
-// JSON 验证函数，返回诊断信息
-const jsonLinter = linter(view => {
-	const diagnostics: Diagnostic[] = [];
-	const doc = view.state.doc.toString();
+// Create a function that returns the linter with the translation function
+const createJsonLinter = (t: (key: string, options?: never) => string) => {
+	return linter(view => {
+		const diagnostics: Diagnostic[] = [];
+		const doc = view.state.doc.toString();
 
-	if (!doc.trim()) return diagnostics;
+		if (!doc.trim()) return diagnostics;
 
-	try {
-		parseJson(doc);
-	} catch (error) {
-		if (error instanceof JSONError) {
-			const errorInfo = getJsonErrorInfo(error, doc);
-			if (!errorInfo) return diagnostics;
+		try {
+			parseJson(doc);
+		} catch (error) {
+			if (error instanceof JSONError) {
+				const errorInfo = getJsonErrorInfo(error, doc, t);
+				if (!errorInfo) return diagnostics;
 
-			diagnostics.push({
-				from: errorInfo.position,
-				to: errorInfo.position,
-				severity: 'error',
-				message: errorInfo.message
-			});
+				diagnostics.push({
+					from: errorInfo.position,
+					to: errorInfo.position,
+					severity: 'error',
+					message: errorInfo.message
+				});
+			}
 		}
-	}
-	return diagnostics;
-});
+		return diagnostics;
+	});
+};
 
 function RouteComponent() {
+	const { t } = useTranslation();
 	const editorRef = useRef<ReactCodeMirrorRef>(null);
 	const [jsonInput, setJsonInput] = useState('');
 	const [indentSize, setIndentSize] = useState(2);
@@ -150,12 +155,12 @@ function RouteComponent() {
 		message: string;
 	} | null>(null);
 
-	// 配置 CodeMirror 扩展
+	// Configure CodeMirror extensions
 	const extensions = useMemo(
 		() => [
 			json(),
 			errorLineField,
-			jsonLinter,
+			createJsonLinter(t),
 			EditorView.theme({
 				'.cm-error-line': {
 					backgroundColor: '#fee',
@@ -175,7 +180,7 @@ function RouteComponent() {
 				}
 			})
 		],
-		[]
+		[t]
 	);
 
 	// Handle input changes
@@ -189,7 +194,7 @@ function RouteComponent() {
 			if (!jsonInput.trim()) {
 				setAlertInfo({
 					type: 'error',
-					message: '请先输入有效的 JSON 数据'
+					message: t('jsonFormatter.enterValidJson')
 				});
 				return;
 			}
@@ -198,7 +203,7 @@ function RouteComponent() {
 			const formatted = JSON.stringify(parsedJson, null, indentSize);
 			setJsonInput(formatted);
 
-			// 清除错误状态
+			// Clear error state
 			setErrorInfo(null);
 			if (editorRef.current?.view) {
 				editorRef.current.view.dispatch({
@@ -208,14 +213,14 @@ function RouteComponent() {
 
 			setAlertInfo({
 				type: 'success',
-				message: '有效的 JSON 格式'
+				message: t('jsonFormatter.validJson')
 			});
 		} catch (error: unknown) {
-			const errorInfo = getJsonErrorInfo(error, jsonInput);
+			const errorInfo = getJsonErrorInfo(error, jsonInput, t);
 			if (!errorInfo) {
 				setAlertInfo({
 					type: 'error',
-					message: '无效的 JSON 格式'
+					message: t('jsonFormatter.invalidJson')
 				});
 				return;
 			}
@@ -225,7 +230,7 @@ function RouteComponent() {
 				message: errorInfo.message
 			});
 
-			// 跳转到错误行
+			// Jump to error line
 			if (editorRef.current?.view) {
 				const view = editorRef.current.view;
 				const lineObj = view.state.doc.line(errorInfo.line);
@@ -242,7 +247,7 @@ function RouteComponent() {
 				});
 			}
 		}
-	}, [jsonInput, indentSize]);
+	}, [jsonInput, indentSize, t]);
 
 	// Compress JSON by removing all whitespace
 	const handleCompress = () => {
@@ -250,7 +255,7 @@ function RouteComponent() {
 			if (!jsonInput.trim()) {
 				setAlertInfo({
 					type: 'error',
-					message: '请先输入有效的 JSON 数据'
+					message: t('jsonFormatter.enterValidJson')
 				});
 				return;
 			}
@@ -263,7 +268,7 @@ function RouteComponent() {
 		} catch {
 			setAlertInfo({
 				type: 'error',
-				message: '无效的 JSON 格式'
+				message: t('jsonFormatter.invalidJson')
 			});
 		}
 	};
@@ -271,23 +276,23 @@ function RouteComponent() {
 	// Escape JSON string
 	const handleEscape = () => {
 		try {
-			// 首先验证是否为有效的 JSON
+			// First validate if it's valid JSON
 			if (jsonInput.trim()) {
 				parseJson(jsonInput);
 			}
 
 			const escaped = JSON.stringify(jsonInput);
-			// 去掉首尾的引号
+			// Remove the quotes at the beginning and end
 			setJsonInput(escaped.slice(1, -1));
 
 			setAlertInfo({
 				type: 'success',
-				message: 'JSON 已转义'
+				message: t('jsonFormatter.jsonEscaped')
 			});
 		} catch {
 			setAlertInfo({
 				type: 'error',
-				message: '处理 JSON 时出错'
+				message: t('jsonFormatter.processingError')
 			});
 		}
 	};
@@ -295,19 +300,19 @@ function RouteComponent() {
 	// Unescape JSON string
 	const handleUnescape = () => {
 		try {
-			// 添加引号使其成为有效的 JSON 字符串
+			// Add quotes to make it a valid JSON string
 			const withQuotes = `"${jsonInput}"`;
 			const unescaped = JSON.parse(withQuotes);
 			setJsonInput(unescaped);
 
 			setAlertInfo({
 				type: 'success',
-				message: '已去除转义'
+				message: t('jsonFormatter.jsonUnescaped')
 			});
 		} catch {
 			setAlertInfo({
 				type: 'error',
-				message: '处理 JSON 时出错'
+				message: t('jsonFormatter.processingError')
 			});
 		}
 	};
@@ -318,12 +323,12 @@ function RouteComponent() {
 			void navigator.clipboard.writeText(jsonInput);
 			setAlertInfo({
 				type: 'success',
-				message: '已复制到剪贴板'
+				message: t('jsonFormatter.copiedToClipboard')
 			});
 		} catch {
 			setAlertInfo({
 				type: 'error',
-				message: '复制到剪贴板失败'
+				message: t('jsonFormatter.copyFailed')
 			});
 		}
 	};
@@ -334,7 +339,9 @@ function RouteComponent() {
 				<Card className='bg-card/50 border-border/40 w-full border p-6 shadow-lg backdrop-blur-sm'>
 					<div className='mb-4 flex items-center justify-between'>
 						<div className='flex items-center space-x-4'>
-							<span className='text-sm font-medium'>缩进量:</span>
+							<span className='text-sm font-medium'>
+								{t('jsonFormatter.indentSize')}
+							</span>
 							<RadioGroup
 								value={String(indentSize)}
 								onValueChange={e => setIndentSize(Number(e))}
@@ -343,13 +350,13 @@ function RouteComponent() {
 								<div className='flex items-center space-x-2'>
 									<RadioGroupItem value='2' id='indent-2' />
 									<Label htmlFor='indent-2' className='text-sm'>
-										2 个空格
+										{t('jsonFormatter.spaces2')}
 									</Label>
 								</div>
 								<div className='flex items-center space-x-2'>
 									<RadioGroupItem value='4' id='indent-4' />
 									<Label htmlFor='indent-4' className='text-sm'>
-										4 个空格
+										{t('jsonFormatter.spaces4')}
 									</Label>
 								</div>
 							</RadioGroup>
@@ -360,45 +367,47 @@ function RouteComponent() {
 								onClick={handleFormat}
 								className='flex items-center gap-2'
 							>
-								<ScanLine className='h-4 w-4' /> 校验并格式化
+								<ScanLine className='h-4 w-4' />{' '}
+								{t('jsonFormatter.validateFormat')}
 							</Button>
 							<Button
 								variant='outline'
 								onClick={handleCompress}
 								className='flex items-center gap-2'
 							>
-								<FileArchive className='h-4 w-4' /> 压缩
+								<FileArchive className='h-4 w-4' />{' '}
+								{t('jsonFormatter.compress')}
 							</Button>
 							<Button
 								variant='outline'
 								onClick={handleEscape}
 								className='flex items-center gap-2'
 							>
-								<CodeXml className='h-4 w-4' /> 转义
+								<CodeXml className='h-4 w-4' /> {t('jsonFormatter.escape')}
 							</Button>
 							<Button
 								variant='outline'
 								onClick={handleUnescape}
 								className='flex items-center gap-2'
 							>
-								<Code className='h-4 w-4' /> 去除转义
+								<Code className='h-4 w-4' /> {t('jsonFormatter.unescape')}
 							</Button>
 							<Button
 								variant='outline'
 								onClick={handleCopy}
 								className='flex items-center gap-2'
 							>
-								<Clipboard className='h-4 w-4' /> 复制
+								<Clipboard className='h-4 w-4' /> {t('jsonFormatter.copy')}
 							</Button>
 						</div>
 					</div>
 
-					{/* 错误提示 */}
+					{/* Error message */}
 					{errorInfo && (
 						<div className='mb-4 rounded-md border border-red-200 bg-red-50 p-3'>
 							<p className='text-sm text-red-800'>
 								<span className='font-semibold'>
-									第 {errorInfo.line} 行错误：
+									{t('jsonFormatter.errorLine', { line: errorInfo.line })}
 								</span>
 								{errorInfo.message}
 							</p>
@@ -439,7 +448,7 @@ function RouteComponent() {
 								extensions={extensions}
 								theme={whiteLight}
 								height='500px'
-								placeholder='在此粘贴 JSON 数据...'
+								placeholder={t('jsonFormatter.placeholder')}
 							/>
 						</div>
 					</div>

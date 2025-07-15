@@ -9,12 +9,14 @@ import { Clipboard, ArrowDownUp } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/tools/url-codec')({
 	component: RouteComponent
 });
 
 function RouteComponent() {
+	const { t } = useTranslation();
 	const [inputText, setInputText] = useState<string>('');
 	const [outputText, setOutputText] = useState<string>('');
 	const [mode, setMode] = useState<'encode' | 'decode'>('encode');
@@ -25,7 +27,7 @@ function RouteComponent() {
 	const encodeUrl = useCallback(() => {
 		try {
 			if (!inputText.trim()) {
-				toast.error('请先输入需要编码的文本');
+				toast.error(t('urlCodec.noInputText'));
 				return;
 			}
 
@@ -52,19 +54,22 @@ function RouteComponent() {
 			}
 
 			setOutputText(encodedText);
-			toast.success('编码成功');
+			toast.success(t('urlCodec.encodeSuccess'));
 		} catch (error) {
 			toast.error(
-				'编码失败: ' + (error instanceof Error ? error.message : '未知错误')
+				t('urlCodec.encodeError', {
+					error:
+						error instanceof Error ? error.message : t('urlCodec.unknownError')
+				})
 			);
 		}
-	}, [inputText, encodeSpaces, encodeAll]);
+	}, [inputText, encodeSpaces, encodeAll, t]);
 
 	// URL decoding function
 	const decodeUrl = useCallback(() => {
 		try {
 			if (!inputText.trim()) {
-				toast.error('请先输入需要解码的URL文本');
+				toast.error(t('urlCodec.noInputUrl'));
 				return;
 			}
 
@@ -78,14 +83,18 @@ function RouteComponent() {
 			const decodedText = decodeURIComponent(textToProcess);
 
 			setOutputText(decodedText);
-			toast.success('解码成功');
+			toast.success(t('urlCodec.decodeSuccess'));
 		} catch (error) {
 			toast.error(
-				'解码失败: ' +
-					(error instanceof Error ? error.message : '无效的URL编码字符串')
+				t('urlCodec.decodeError', {
+					error:
+						error instanceof Error
+							? error.message
+							: t('urlCodec.invalidUrlEncoding')
+				})
 			);
 		}
-	}, [inputText]);
+	}, [inputText, t]);
 
 	// Process function based on the current mode
 	const processData = useCallback(() => {
@@ -105,17 +114,17 @@ function RouteComponent() {
 	// Copy output to clipboard
 	const handleCopy = useCallback(() => {
 		if (!outputText) {
-			toast.error('没有可复制的内容');
+			toast.error(t('urlCodec.noCopyContent'));
 			return;
 		}
 
 		try {
 			void navigator.clipboard.writeText(outputText);
-			toast.success('已复制到剪贴板');
+			toast.success(t('urlCodec.copiedToClipboard'));
 		} catch {
-			toast.error('复制到剪贴板失败');
+			toast.error(t('urlCodec.copyFailed'));
 		}
-	}, [outputText]);
+	}, [outputText, t]);
 
 	return (
 		<ToolPageLayout>
@@ -136,8 +145,8 @@ function RouteComponent() {
 							className='w-full'
 						>
 							<TabsList className='grid w-full grid-cols-2'>
-								<TabsTrigger value='encode'>URL 编码</TabsTrigger>
-								<TabsTrigger value='decode'>URL 解码</TabsTrigger>
+								<TabsTrigger value='encode'>{t('urlCodec.encode')}</TabsTrigger>
+								<TabsTrigger value='decode'>{t('urlCodec.decode')}</TabsTrigger>
 							</TabsList>
 						</Tabs>
 
@@ -154,7 +163,7 @@ function RouteComponent() {
 										htmlFor='encodeSpaces'
 										className='cursor-pointer text-sm'
 									>
-										将空格编码为 %20（不选则编码为 +）
+										{t('urlCodec.encodeSpaces')}
 									</Label>
 								</div>
 								<div className='flex items-center space-x-2'>
@@ -164,7 +173,7 @@ function RouteComponent() {
 										onCheckedChange={checked => setEncodeAll(!!checked)}
 									/>
 									<Label htmlFor='encodeAll' className='cursor-pointer text-sm'>
-										编码所有字符（包括非保留字符）
+										{t('urlCodec.encodeAll')}
 									</Label>
 								</div>
 							</div>
@@ -173,7 +182,9 @@ function RouteComponent() {
 						{/* Input Section */}
 						<div className='space-y-2'>
 							<Label htmlFor='input' className='text-sm font-medium'>
-								{mode === 'encode' ? '输入文本' : '输入 URL 编码文本'}
+								{mode === 'encode'
+									? t('urlCodec.inputText')
+									: t('urlCodec.inputUrlText')}
 							</Label>
 							<div className='bg-background/80 rounded-md border p-1 shadow-sm'>
 								<Textarea
@@ -183,8 +194,8 @@ function RouteComponent() {
 									onChange={e => setInputText(e.target.value)}
 									placeholder={
 										mode === 'encode'
-											? '输入需要编码的文本...'
-											: '输入需要解码的URL编码文本...'
+											? t('urlCodec.inputTextPlaceholder')
+											: t('urlCodec.inputUrlPlaceholder')
 									}
 								/>
 							</div>
@@ -196,7 +207,9 @@ function RouteComponent() {
 								onClick={processData}
 								className='flex items-center justify-center gap-2'
 							>
-								{mode === 'encode' ? 'URL 编码' : 'URL 解码'}
+								{mode === 'encode'
+									? t('urlCodec.encode')
+									: t('urlCodec.decode')}
 							</Button>
 							<Button
 								variant='outline'
@@ -204,7 +217,7 @@ function RouteComponent() {
 								className='flex items-center justify-center gap-2'
 								disabled={!outputText}
 							>
-								<ArrowDownUp className='h-4 w-4' /> 交换
+								<ArrowDownUp className='h-4 w-4' /> {t('urlCodec.swap')}
 							</Button>
 							<Button
 								variant='outline'
@@ -212,14 +225,16 @@ function RouteComponent() {
 								className='flex items-center justify-center gap-2'
 								disabled={!outputText}
 							>
-								<Clipboard className='h-4 w-4' /> 复制结果
+								<Clipboard className='h-4 w-4' /> {t('urlCodec.copyResult')}
 							</Button>
 						</div>
 
 						{/* Output Section */}
 						<div className='space-y-2'>
 							<Label htmlFor='output' className='text-sm font-medium'>
-								{mode === 'encode' ? 'URL 编码结果' : 'URL 解码结果'}
+								{mode === 'encode'
+									? t('urlCodec.urlEncodeResult')
+									: t('urlCodec.urlDecodeResult')}
 							</Label>
 							<div className='bg-background/80 rounded-md border p-1 shadow-sm'>
 								<Textarea
@@ -228,7 +243,9 @@ function RouteComponent() {
 									value={outputText}
 									readOnly
 									placeholder={
-										mode === 'encode' ? 'URL 编码结果...' : '解码后的文本...'
+										mode === 'encode'
+											? t('urlCodec.urlEncodePlaceholder')
+											: t('urlCodec.urlDecodePlaceholder')
 									}
 								/>
 							</div>

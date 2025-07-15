@@ -8,12 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Clipboard, RotateCcw, CheckCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/tools/uuid-generator')({
 	component: RouteComponent
 });
 
 function RouteComponent() {
+	const { t } = useTranslation();
 	const [count, setCount] = useState<number>(1);
 	const [uppercase, setUppercase] = useState<boolean>(false);
 	const [commaSeparated, setCommaSeparated] = useState<boolean>(false);
@@ -41,9 +43,9 @@ function RouteComponent() {
 		setUuids(newUuids);
 		setAlertInfo({
 			type: 'success',
-			message: `已生成 ${count} 个 UUID`
+			message: t('uuidGenerator.generated', { count })
 		});
-	}, [count, uppercase, useHyphens]);
+	}, [count, uppercase, useHyphens, t]);
 
 	// Format UUIDs as text
 	const getFormattedUuids = useCallback(() => {
@@ -57,7 +59,7 @@ function RouteComponent() {
 		if (uuids.length === 0) {
 			setAlertInfo({
 				type: 'error',
-				message: '没有可复制的 UUID'
+				message: t('uuidGenerator.noUuid')
 			});
 			return;
 		}
@@ -66,15 +68,15 @@ function RouteComponent() {
 			void navigator.clipboard.writeText(getFormattedUuids());
 			setAlertInfo({
 				type: 'success',
-				message: '已复制到剪贴板'
+				message: t('uuidGenerator.copiedToClipboard')
 			});
 		} catch {
 			setAlertInfo({
 				type: 'error',
-				message: '复制到剪贴板失败'
+				message: t('uuidGenerator.copyFailed')
 			});
 		}
-	}, [uuids, getFormattedUuids]);
+	}, [uuids, getFormattedUuids, t]);
 
 	return (
 		<ToolPageLayout>
@@ -87,7 +89,7 @@ function RouteComponent() {
 							{/* Count Input */}
 							<div className='flex flex-col space-y-2'>
 								<Label htmlFor='count' className='text-sm font-medium'>
-									生成数量
+									{t('uuidGenerator.count')}
 								</Label>
 								<Input
 									id='count'
@@ -110,7 +112,7 @@ function RouteComponent() {
 										onCheckedChange={checked => setUseHyphens(!!checked)}
 									/>
 									<Label htmlFor='hyphens' className='cursor-pointer text-sm'>
-										连字符|-
+										{t('uuidGenerator.useHyphens')}
 									</Label>
 								</div>
 
@@ -122,7 +124,7 @@ function RouteComponent() {
 										onCheckedChange={checked => setUppercase(!!checked)}
 									/>
 									<Label htmlFor='uppercase' className='cursor-pointer text-sm'>
-										使用大写
+										{t('uuidGenerator.uppercase')}
 									</Label>
 								</div>
 
@@ -134,7 +136,7 @@ function RouteComponent() {
 										onCheckedChange={checked => setCommaSeparated(!!checked)}
 									/>
 									<Label htmlFor='comma' className='cursor-pointer text-sm'>
-										逗号分隔|,
+										{t('uuidGenerator.commaSeparated')}
 									</Label>
 								</div>
 
@@ -146,7 +148,7 @@ function RouteComponent() {
 										onCheckedChange={checked => setUseQuotes(!!checked)}
 									/>
 									<Label htmlFor='quotes' className='cursor-pointer text-sm'>
-										引号|&quot;&quot;
+										{t('uuidGenerator.useQuotes')}
 									</Label>
 								</div>
 							</div>
@@ -157,14 +159,15 @@ function RouteComponent() {
 									onClick={generateUuids}
 									className='flex w-full items-center justify-center gap-2'
 								>
-									<RotateCcw className='h-4 w-4' /> 生成 UUID
+									<RotateCcw className='h-4 w-4' />{' '}
+									{t('uuidGenerator.generate')}
 								</Button>
 								<Button
 									variant='outline'
 									onClick={handleCopy}
 									className='flex w-full items-center justify-center gap-2'
 								>
-									<Clipboard className='h-4 w-4' /> 复制
+									<Clipboard className='h-4 w-4' /> {t('uuidGenerator.copy')}
 								</Button>
 							</div>
 						</div>
@@ -199,7 +202,7 @@ function RouteComponent() {
 								className='min-h-[350px] w-full resize-y bg-transparent font-mono text-sm'
 								value={getFormattedUuids()}
 								readOnly
-								placeholder='点击"生成 UUID"按钮生成 UUID...'
+								placeholder={t('uuidGenerator.placeholder')}
 							/>
 						</div>
 					</div>

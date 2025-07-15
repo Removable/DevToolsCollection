@@ -9,37 +9,38 @@ import CodeMirror, { type ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import { whiteLight } from '@uiw/codemirror-theme-white';
 import { EditorView } from '@codemirror/view';
 import { javascript } from '@codemirror/lang-javascript';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/tools/html-preview')({
 	component: RouteComponent
 });
 
-// HTML格式化函数
+// HTML formatting function
 function formatHTML(html: string): string {
 	let formatted = '';
 	let indent = '';
 
-	// 简单的HTML格式化逻辑
+	// Simple HTML formatting logic
 	const tags = html.split(/(<\/?[^>]+>)/g);
 	for (let i = 0; i < tags.length; i++) {
 		const tag = tags[i];
 
-		// 跳过空字符串
+		// Skip empty strings
 		if (!tag.trim()) continue;
 
-		// 处理结束标签
+		// Handle closing tags
 		if (tag.startsWith('</')) {
-			indent = indent.slice(2); // 减少缩进
+			indent = indent.slice(2); // Reduce indentation
 			formatted += indent + tag + '\n';
 		}
-		// 处理自闭合标签
+		// Handle self-closing tags
 		else if (tag.endsWith('/>')) {
 			formatted += indent + tag + '\n';
 		}
-		// 处理开始标签
+		// Handle opening tags
 		else if (tag.startsWith('<')) {
 			formatted += indent + tag + '\n';
-			// 不为这些标签增加缩进
+			// Don't increase indentation for these tags
 			if (
 				!tag.includes('<img') &&
 				!tag.includes('<input') &&
@@ -48,10 +49,10 @@ function formatHTML(html: string): string {
 				!tag.includes('<meta') &&
 				!tag.includes('<link')
 			) {
-				indent += '  '; // 增加缩进
+				indent += '  '; // Increase indentation
 			}
 		}
-		// 处理标签内容
+		// Handle tag content
 		else {
 			const content = tag.trim();
 			if (content) {
@@ -63,20 +64,20 @@ function formatHTML(html: string): string {
 	return formatted;
 }
 
-// CSS格式化函数
+// CSS formatting function
 function formatCSS(css: string): string {
-	// 移除多余空格和注释
+	// Remove extra spaces and comments
 	css = css.replace(/\/\*[\s\S]*?\*\//g, '');
 	css = css.replace(/([^0-9a-zA-Z.#])\s+/g, '$1');
 	css = css.replace(/\s+([^0-9a-zA-Z.#]+)/g, '$1');
 	css = css.replace(/;}/g, '}');
 
-	// 添加适当的换行和缩进
+	// Add appropriate line breaks and indentation
 	let formatted = '';
 	let indent = '';
 
-	// 在每个 { 后添加换行，并增加缩进
-	// 在每个 } 前减少缩进，并在后面添加换行
+	// Add line break after each {, and increase indentation
+	// Reduce indentation before each }, and add line break after
 	for (let i = 0; i < css.length; i++) {
 		const char = css.charAt(i);
 
@@ -101,8 +102,11 @@ function formatCSS(css: string): string {
 }
 
 function RouteComponent() {
+	const { t } = useTranslation();
 	const editorRef = useRef<ReactCodeMirrorRef>(null);
-	const [code, setCode] = useState<string>(`<!DOCTYPE html>
+	const [code, setCode] = useState<string>(() => {
+		// Create sample HTML with translations
+		return `<!DOCTYPE html>
 <html>
 <head>
   <style>
@@ -135,81 +139,82 @@ function RouteComponent() {
 </head>
 <body>
   <div class="container">
-    <h1>HTML 在线预览示例</h1>
-    <p>这是一个简单的 HTML 预览示例。您可以在左侧编辑器中修改代码，右侧会实时显示预览效果。</p>
-    <p>支持 <span class="highlight">HTML</span> 和 <span class="highlight">CSS</span> 代码。</p>
+    <h1>${t('htmlPreview.sampleTitle')}</h1>
+    <p>${t('htmlPreview.sampleDescription')}</p>
+    <p>${t('htmlPreview.sampleSupport')}</p>
   </div>
 </body>
-</html>`);
+</html>`;
+	});
 
-	// 创建一个安全的HTML预览
+	// Create a safe HTML preview
 	const [previewSrc, setPreviewSrc] = useState<string>('');
 
-	// 更新预览内容
+	// Update preview content
 	const updatePreview = useCallback((htmlCode: string) => {
-		// 确保HTML包含正确的字符集声明
+		// Ensure HTML contains correct charset declaration
 		let processedHtml = htmlCode;
 
-		// 检查是否已经有charset声明
+		// Check if charset declaration already exists
 		if (
 			!processedHtml.includes('<meta charset="utf-8"') &&
 			!processedHtml.includes('<meta charset="UTF-8"') &&
 			!processedHtml.includes('charset=utf-8') &&
 			!processedHtml.includes('charset=UTF-8')
 		) {
-			// 在head标签中添加charset声明
+			// Add charset declaration to head tag
 			if (processedHtml.includes('<head>')) {
 				processedHtml = processedHtml.replace(
 					'<head>',
 					'<head>\n  <meta charset="UTF-8">'
 				);
 			} else if (processedHtml.includes('<html>')) {
-				// 如果没有head标签，但有html标签，添加head标签和charset声明
+				// If no head tag but html tag exists, add head tag and charset declaration
 				processedHtml = processedHtml.replace(
 					'<html>',
 					'<html>\n<head>\n  <meta charset="UTF-8">\n</head>'
 				);
 			} else {
-				// 如果连html标签都没有，在开头添加完整的声明
+				// If not even html tag exists, add complete declaration at the beginning
 				processedHtml =
 					'<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="UTF-8">\n</head>\n' +
 					processedHtml;
 			}
 		}
 
-		// 创建一个Blob对象，用于生成预览URL，指定MIME类型和字符集
+		// Create a Blob object to generate preview URL, specify MIME type and charset
 		const blob = new Blob([processedHtml], { type: 'text/html;charset=UTF-8' });
 		const url = URL.createObjectURL(blob);
 
-		// 更新预览源
+		// Update preview source
 		setPreviewSrc(url);
 
-		// 清理之前的URL
+		// Clean up previous URL
 		return () => {
 			URL.revokeObjectURL(url);
 		};
 	}, []);
 
-	// 更新预览
+	// Update preview
 	useEffect(() => {
 		updatePreview(code);
 	}, [code, updatePreview]);
 
-	// 格式化代码
+	// Format code
 	const handleFormat = useCallback(() => {
 		try {
 			if (!code.trim()) {
-				toast.error('请先输入HTML代码');
+				toast.error(t('htmlPreview.noHtmlCode'));
 				return;
 			}
 
-			// 提取HTML和CSS部分
+			// Extract HTML and CSS parts
 			let formattedCode = code;
 
-			// 格式化HTML
+			// Format HTML
 			formattedCode = formatHTML(formattedCode);
 
-			// 格式化CSS (查找style标签内的内容)
+			// Format CSS (find content inside style tags)
 			const styleRegex = /<style>([\s\S]*?)<\/style>/g;
 			formattedCode = formattedCode.replace(
 				styleRegex,
@@ -220,31 +225,36 @@ function RouteComponent() {
 			);
 
 			setCode(formattedCode);
-			toast.success('代码格式化成功');
+			toast.success(t('htmlPreview.formatSuccess'));
 		} catch (error) {
 			toast.error(
-				'格式化失败: ' + (error instanceof Error ? error.message : '未知错误')
+				t('htmlPreview.formatError', {
+					error:
+						error instanceof Error
+							? error.message
+							: t('base64Codec.unknownError')
+				})
 			);
 		}
-	}, [code]);
+	}, [code, t]);
 
-	// 复制代码到剪贴板
+	// Copy code to clipboard
 	const handleCopy = useCallback(() => {
 		try {
 			void navigator.clipboard.writeText(code);
-			toast.success('已复制到剪贴板');
+			toast.success(t('htmlPreview.copiedToClipboard'));
 		} catch {
-			toast.error('复制到剪贴板失败');
+			toast.error(t('htmlPreview.copyFailed'));
 		}
-	}, [code]);
+	}, [code, t]);
 
-	// 刷新预览
+	// Refresh preview
 	const handleRefresh = useCallback(() => {
 		updatePreview(code);
-		toast.success('预览已刷新');
-	}, [code, updatePreview]);
+		toast.success(t('htmlPreview.previewRefreshed'));
+	}, [code, updatePreview, t]);
 
-	// 配置 CodeMirror 扩展
+	// Configure CodeMirror extensions
 	const extensions = [
 		javascript({ jsx: true, typescript: true }),
 		EditorView.theme({
@@ -261,7 +271,9 @@ function RouteComponent() {
 					<div className='mb-4 flex items-center justify-between'>
 						<div className='flex items-center space-x-2'>
 							<FileCode className='h-5 w-5' />
-							<span className='text-lg font-medium'>HTML 在线预览工具</span>
+							<span className='text-lg font-medium'>
+								{t('htmlPreview.title')}
+							</span>
 						</div>
 						<div className='flex space-x-3'>
 							<Button
@@ -269,27 +281,28 @@ function RouteComponent() {
 								onClick={handleFormat}
 								className='flex items-center gap-2'
 							>
-								<Code className='h-4 w-4' /> 格式化代码
+								<Code className='h-4 w-4' /> {t('htmlPreview.formatCode')}
 							</Button>
 							<Button
 								variant='outline'
 								onClick={handleCopy}
 								className='flex items-center gap-2'
 							>
-								<Clipboard className='h-4 w-4' /> 复制代码
+								<Clipboard className='h-4 w-4' /> {t('htmlPreview.copyCode')}
 							</Button>
 							<Button
 								variant='outline'
 								onClick={handleRefresh}
 								className='flex items-center gap-2'
 							>
-								<RefreshCw className='h-4 w-4' /> 刷新预览
+								<RefreshCw className='h-4 w-4' />{' '}
+								{t('htmlPreview.refreshPreview')}
 							</Button>
 						</div>
 					</div>
 
 					<div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-						{/* 代码编辑器 */}
+						{/* Code Editor */}
 						<div className='bg-background flex w-full overflow-hidden rounded-md border'>
 							<CodeMirror
 								ref={editorRef}
@@ -299,11 +312,11 @@ function RouteComponent() {
 								extensions={extensions}
 								theme={whiteLight}
 								height='600px'
-								placeholder='在此输入HTML代码...'
+								placeholder={t('htmlPreview.codePlaceholder')}
 							/>
 						</div>
 
-						{/* 预览区域 */}
+						{/* Preview Area */}
 						<div className='bg-background flex w-full overflow-hidden rounded-md border'>
 							<iframe
 								title='HTML Preview'

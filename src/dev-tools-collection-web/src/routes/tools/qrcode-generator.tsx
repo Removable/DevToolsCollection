@@ -16,12 +16,14 @@ import {
 import { toast } from 'sonner';
 import QRCode from 'qrcode';
 import { useDebounce } from '@uidotdev/usehooks';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/tools/qrcode-generator')({
 	component: RouteComponent
 });
 
 function RouteComponent() {
+	const { t } = useTranslation();
 	const [text, setText] = useState<string>('');
 	const [size, setSize] = useState<number>(200);
 	const [errorCorrectionLevel, setErrorCorrectionLevel] = useState<
@@ -54,13 +56,13 @@ function RouteComponent() {
 				// Generate QR code as data URL
 				const dataUrl = await QRCode.toDataURL(str, options);
 				setQrCodeDataUrl(dataUrl);
-				toast.success('二维码已生成');
+				toast.success(t('qrcodeGenerator.generateSuccess'));
 			} catch (error) {
 				console.error('QR code generation error:', error);
-				toast.error('生成二维码时出错');
+				toast.error(t('qrcodeGenerator.generateError'));
 			}
 		},
-		[size, errorCorrectionLevel, qrColor, bgColor]
+		[size, errorCorrectionLevel, qrColor, bgColor, t]
 	);
 
 	const debouncedText = useDebounce(text, 500);
@@ -75,7 +77,7 @@ function RouteComponent() {
 	// Download QR code image
 	const handleDownload = useCallback(() => {
 		if (!qrCodeDataUrl) {
-			toast.error('没有可下载的二维码');
+			toast.error(t('qrcodeGenerator.noQrToDownload'));
 			return;
 		}
 
@@ -85,8 +87,8 @@ function RouteComponent() {
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);
-		toast.success('二维码已下载');
-	}, [qrCodeDataUrl]);
+		toast.success(t('qrcodeGenerator.downloadSuccess'));
+	}, [qrCodeDataUrl, t]);
 
 	return (
 		<ToolPageLayout>
@@ -96,13 +98,13 @@ function RouteComponent() {
 						{/* Input Section */}
 						<div className='flex flex-col space-y-2'>
 							<Label htmlFor='text' className='text-sm font-medium'>
-								二维码内容
+								{t('qrcodeGenerator.content')}
 							</Label>
 							<Textarea
 								id='text'
 								value={text}
 								onChange={e => setText(e.target.value)}
-								placeholder='输入要生成二维码的文本、URL或其他内容...'
+								placeholder={t('qrcodeGenerator.contentPlaceholder')}
 								className='min-h-[100px] resize-y'
 							/>
 						</div>
@@ -114,7 +116,7 @@ function RouteComponent() {
 								{/* Error Correction Level */}
 								<div className='flex flex-col space-y-2'>
 									<Label htmlFor='errorLevel' className='text-sm font-medium'>
-										容错级别
+										{t('qrcodeGenerator.errorCorrectionLevel')}
 									</Label>
 									<Select
 										value={errorCorrectionLevel}
@@ -123,13 +125,23 @@ function RouteComponent() {
 										}
 									>
 										<SelectTrigger id='errorLevel' className='w-full'>
-											<SelectValue placeholder='选择容错级别' />
+											<SelectValue
+												placeholder={t('qrcodeGenerator.selectErrorLevel')}
+											/>
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value='L'>低 (L - 7%)</SelectItem>
-											<SelectItem value='M'>中 (M - 15%)</SelectItem>
-											<SelectItem value='Q'>高 (Q - 25%)</SelectItem>
-											<SelectItem value='H'>最高 (H - 30%)</SelectItem>
+											<SelectItem value='L'>
+												{t('qrcodeGenerator.errorLevelL')}
+											</SelectItem>
+											<SelectItem value='M'>
+												{t('qrcodeGenerator.errorLevelM')}
+											</SelectItem>
+											<SelectItem value='Q'>
+												{t('qrcodeGenerator.errorLevelQ')}
+											</SelectItem>
+											<SelectItem value='H'>
+												{t('qrcodeGenerator.errorLevelH')}
+											</SelectItem>
 										</SelectContent>
 									</Select>
 								</div>
@@ -137,7 +149,7 @@ function RouteComponent() {
 								{/* Size */}
 								<div className='flex flex-col space-y-2'>
 									<Label htmlFor='size' className='text-sm font-medium'>
-										尺寸: {size}x{size} 像素
+										{t('qrcodeGenerator.size', { size })}
 									</Label>
 									<Input
 										id='size'
@@ -155,7 +167,7 @@ function RouteComponent() {
 								<div className='grid grid-cols-2 gap-4'>
 									<div className='flex flex-col space-y-2'>
 										<Label htmlFor='qrColor' className='text-sm font-medium'>
-											二维码颜色
+											{t('qrcodeGenerator.qrColor')}
 										</Label>
 										<div className='flex items-center space-x-2'>
 											<Input
@@ -175,7 +187,7 @@ function RouteComponent() {
 									</div>
 									<div className='flex flex-col space-y-2'>
 										<Label htmlFor='bgColor' className='text-sm font-medium'>
-											背景颜色
+											{t('qrcodeGenerator.backgroundColor')}
 										</Label>
 										<div className='flex items-center space-x-2'>
 											<Input
@@ -201,14 +213,14 @@ function RouteComponent() {
 										onClick={() => generateQrCode(text)}
 										className='flex items-center justify-center gap-2'
 									>
-										生成二维码
+										{t('qrcodeGenerator.generate')}
 									</Button>
 									<Button
 										variant='outline'
 										onClick={handleDownload}
 										className='flex items-center justify-center gap-2'
 									>
-										下载
+										{t('qrcodeGenerator.download')}
 									</Button>
 								</div>
 							</div>
@@ -227,7 +239,7 @@ function RouteComponent() {
 									</div>
 								) : (
 									<div className='flex h-[200px] w-[200px] items-center justify-center rounded-md border bg-gray-100 text-center text-gray-500'>
-										输入内容生成二维码
+										{t('qrcodeGenerator.enterContent')}
 									</div>
 								)}
 							</div>

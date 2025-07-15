@@ -16,6 +16,7 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '@/components/ui/select';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/tools/hash-encoder')({
 	component: RouteComponent
@@ -276,6 +277,7 @@ async function calculateFileMD5(file: File): Promise<string> {
 }
 
 function RouteComponent() {
+	const { t } = useTranslation();
 	const [inputText, setInputText] = useState<string>('');
 	const [outputText, setOutputText] = useState<string>('');
 	const [mode, setMode] = useState<'text' | 'file'>('text');
@@ -392,13 +394,13 @@ function RouteComponent() {
 	const hashText = useCallback(async () => {
 		try {
 			if (!inputText.trim()) {
-				toast.error('请先输入需要哈希的文本');
+				toast.error(t('hashEncoder.noInputText'));
 				return;
 			}
 
 			// Check if secret key is provided for HMAC algorithms
 			if (isHmacAlgorithm(algorithm) && !secretKey.trim()) {
-				toast.error('使用HMAC算法时必须提供密钥');
+				toast.error(t('hashEncoder.hmacKeyRequired'));
 				return;
 			}
 
@@ -456,40 +458,48 @@ function RouteComponent() {
 			}
 
 			setOutputText(hashHex);
-			toast.success('哈希计算成功');
+			toast.success(t('hashEncoder.hashSuccess'));
 		} catch (error) {
 			toast.error(
-				'哈希计算失败: ' + (error instanceof Error ? error.message : '未知错误')
+				t('hashEncoder.hashError', {
+					error:
+						error instanceof Error
+							? error.message
+							: t('base64Codec.unknownError')
+				})
 			);
 		}
-	}, [inputText, algorithm, secretKey]);
+	}, [inputText, algorithm, secretKey, t]);
 
 	// Handle file selection
-	const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0] || null;
-		if (file) {
-			setSelectedFile(file);
-			setFileName(file.name);
-			toast.success(`已选择文件: ${file.name}`);
-		}
-	}, []);
+	const handleFileChange = useCallback(
+		(e: ChangeEvent<HTMLInputElement>) => {
+			const file = e.target.files?.[0] || null;
+			if (file) {
+				setSelectedFile(file);
+				setFileName(file.name);
+				toast.success(t('hashEncoder.fileSelected', { name: file.name }));
+			}
+		},
+		[t]
+	);
 
 	// Hash file
 	const hashFile = useCallback(async () => {
 		if (!selectedFile) {
-			toast.error('请先选择文件');
+			toast.error(t('hashEncoder.noFile'));
 			return;
 		}
 
 		// Check file size (limit to 10MB)
 		if (selectedFile.size > 10 * 1024 * 1024) {
-			toast.error('文件大小不能超过10MB');
+			toast.error(t('hashEncoder.fileSizeExceeded'));
 			return;
 		}
 
 		// Check if secret key is provided for HMAC algorithms
 		if (isHmacAlgorithm(algorithm) && !secretKey.trim()) {
-			toast.error('使用HMAC算法时必须提供密钥');
+			toast.error(t('hashEncoder.hmacKeyRequired'));
 			return;
 		}
 
@@ -561,13 +571,18 @@ function RouteComponent() {
 			}
 
 			setOutputText(hashHex);
-			toast.success('文件哈希计算成功');
+			toast.success(t('hashEncoder.fileHashSuccess'));
 		} catch (error) {
 			toast.error(
-				'哈希计算失败: ' + (error instanceof Error ? error.message : '未知错误')
+				t('hashEncoder.hashError', {
+					error:
+						error instanceof Error
+							? error.message
+							: t('base64Codec.unknownError')
+				})
 			);
 		}
-	}, [selectedFile, algorithm, secretKey]);
+	}, [selectedFile, algorithm, secretKey, t]);
 
 	// Process function based on the current mode
 	const processData = useCallback(() => {
@@ -581,17 +596,17 @@ function RouteComponent() {
 	// Copy output to clipboard
 	const handleCopy = useCallback(() => {
 		if (!outputText) {
-			toast.error('没有可复制的内容');
+			toast.error(t('hashEncoder.noCopyContent'));
 			return;
 		}
 
 		try {
 			void navigator.clipboard.writeText(outputText);
-			toast.success('已复制到剪贴板');
+			toast.success(t('hashEncoder.copiedToClipboard'));
 		} catch {
-			toast.error('复制到剪贴板失败');
+			toast.error(t('hashEncoder.copyFailed'));
 		}
-	}, [outputText]);
+	}, [outputText, t]);
 
 	return (
 		<ToolPageLayout>
@@ -619,19 +634,23 @@ function RouteComponent() {
 							className='w-full'
 						>
 							<TabsList className='grid w-full grid-cols-2'>
-								<TabsTrigger value='text'>文本哈希</TabsTrigger>
-								<TabsTrigger value='file'>文件哈希</TabsTrigger>
+								<TabsTrigger value='text'>
+									{t('hashEncoder.textHash')}
+								</TabsTrigger>
+								<TabsTrigger value='file'>
+									{t('hashEncoder.fileHash')}
+								</TabsTrigger>
 							</TabsList>
 						</Tabs>
 
 						{/* Algorithm Selection */}
 						<div className='space-y-2'>
 							<Label htmlFor='algorithm' className='text-sm font-medium'>
-								选择哈希算法
+								{t('hashEncoder.selectAlgorithm')}
 							</Label>
 							<Select value={algorithm} onValueChange={setAlgorithm}>
 								<SelectTrigger id='algorithm' className='w-full'>
-									<SelectValue placeholder='选择哈希算法' />
+									<SelectValue placeholder={t('hashEncoder.selectAlgorithm')} />
 								</SelectTrigger>
 								<SelectContent>
 									{hashAlgorithms.map(algo => (
@@ -647,14 +666,14 @@ function RouteComponent() {
 						{isHmacAlgorithm(algorithm) && (
 							<div className='space-y-2'>
 								<Label htmlFor='secretKey' className='text-sm font-medium'>
-									HMAC 密钥
+									{t('hashEncoder.hmacKey')}
 								</Label>
 								<Input
 									id='secretKey'
 									type='text'
 									value={secretKey}
 									onChange={e => setSecretKey(e.target.value)}
-									placeholder='输入HMAC密钥...'
+									placeholder={t('hashEncoder.hmacKeyPlaceholder')}
 									className='font-mono'
 								/>
 							</div>
@@ -664,7 +683,7 @@ function RouteComponent() {
 						{mode === 'text' && (
 							<div className='space-y-2'>
 								<Label htmlFor='input' className='text-sm font-medium'>
-									输入文本
+									{t('hashEncoder.inputText')}
 								</Label>
 								<div className='bg-background/80 rounded-md border p-1 shadow-sm'>
 									<Textarea
@@ -672,7 +691,7 @@ function RouteComponent() {
 										className='min-h-[150px] w-full resize-y bg-transparent font-mono text-sm'
 										value={inputText}
 										onChange={e => setInputText(e.target.value)}
-										placeholder='输入需要哈希的文本...'
+										placeholder={t('hashEncoder.inputTextPlaceholder')}
 									/>
 								</div>
 							</div>
@@ -681,7 +700,9 @@ function RouteComponent() {
 						{/* File Upload Section */}
 						{mode === 'file' && (
 							<div className='space-y-2'>
-								<Label className='text-sm font-medium'>上传文件进行哈希</Label>
+								<Label className='text-sm font-medium'>
+									{t('hashEncoder.uploadFile')}
+								</Label>
 								<div className='flex flex-col space-y-2'>
 									<div className='flex items-center gap-2'>
 										<Input
@@ -697,7 +718,8 @@ function RouteComponent() {
 											onClick={() => fileInputRef.current?.click()}
 											className='flex items-center gap-2'
 										>
-											<Upload className='h-4 w-4' /> 选择文件
+											<Upload className='h-4 w-4' />{' '}
+											{t('hashEncoder.selectFile')}
 										</Button>
 									</div>
 									{fileName && (
@@ -706,7 +728,7 @@ function RouteComponent() {
 										</div>
 									)}
 									<p className='text-muted-foreground text-xs'>
-										支持所有文件类型，最大文件大小: 10MB
+										{t('hashEncoder.fileSupport')}
 									</p>
 								</div>
 							</div>
@@ -719,7 +741,9 @@ function RouteComponent() {
 								className='flex items-center justify-center gap-2'
 							>
 								<Hash className='h-4 w-4' />
-								{mode === 'text' ? '计算哈希' : '计算文件哈希'}
+								{mode === 'text'
+									? t('hashEncoder.calculate')
+									: t('hashEncoder.calculateFileHash')}
 							</Button>
 							<Button
 								variant='outline'
@@ -727,14 +751,14 @@ function RouteComponent() {
 								className='flex items-center justify-center gap-2'
 								disabled={!outputText}
 							>
-								<Clipboard className='h-4 w-4' /> 复制结果
+								<Clipboard className='h-4 w-4' /> {t('hashEncoder.copyResult')}
 							</Button>
 						</div>
 
 						{/* Output Section */}
 						<div className='space-y-2'>
 							<Label htmlFor='output' className='text-sm font-medium'>
-								哈希结果
+								{t('hashEncoder.hashResult')}
 							</Label>
 							<div className='bg-background/80 rounded-md border p-1 shadow-sm'>
 								<Textarea
@@ -742,7 +766,7 @@ function RouteComponent() {
 									className='min-h-[100px] w-full resize-y bg-transparent font-mono text-sm'
 									value={outputText}
 									readOnly
-									placeholder='哈希计算结果...'
+									placeholder={t('hashEncoder.hashResultPlaceholder')}
 								/>
 							</div>
 						</div>

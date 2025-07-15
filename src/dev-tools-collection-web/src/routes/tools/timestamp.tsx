@@ -13,12 +13,14 @@ import {
 	SelectValue
 } from '@/components/ui/select';
 import ToolPageLayout from '@/components/ToolPageLayout.tsx';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/tools/timestamp')({
 	component: RouteComponent
 });
 
 function RouteComponent() {
+	const { t } = useTranslation();
 	const [currentTimestamp, setCurrentTimestamp] = useState<number>(Date.now());
 	const [isPaused, setIsPaused] = useState<boolean>(false);
 	const [dateInput, setDateInput] = useState<string>(
@@ -64,21 +66,21 @@ function RouteComponent() {
 
 	const copyTimestamp = () => {
 		navigator.clipboard.writeText(secondLevelTimestamp);
-		toast.success('已复制时间戳');
+		toast.success(t('timestampConverter.timestampCopied'));
 	};
 
 	const convertDateToTimestamp = () => {
 		try {
 			const date = new Date(dateInput);
 			if (isNaN(date.getTime())) {
-				toast.error('请输入有效的日期');
+				toast.error(t('timestampConverter.invalidDate'));
 				return;
 			}
 			const timestamp = date.getTime();
 			setConvertedTimestamp(Math.floor(timestamp / 1000));
-			toast.success('日期转换成功');
+			toast.success(t('timestampConverter.dateConversionSuccess'));
 		} catch {
-			toast.error('请输入有效的日期');
+			toast.error(t('timestampConverter.invalidDate'));
 		}
 	};
 
@@ -86,7 +88,7 @@ function RouteComponent() {
 		try {
 			const timestamp = parseInt(timestampInput);
 			if (isNaN(timestamp)) {
-				toast.error('请输入有效的时间戳');
+				toast.error(t('timestampConverter.invalidTimestamp'));
 				return;
 			}
 
@@ -109,9 +111,9 @@ function RouteComponent() {
 			}
 
 			setConvertedDate(formattedDate);
-			toast.success('时间戳转换成功');
+			toast.success(t('timestampConverter.timestampConversionSuccess'));
 		} catch {
-			toast.error('请输入有效的时间戳');
+			toast.error(t('timestampConverter.invalidTimestamp'));
 		}
 	};
 
@@ -121,14 +123,16 @@ function RouteComponent() {
 				{/* Current Timestamp Card */}
 				<Card>
 					<CardContent className='p-6'>
-						<h2 className='mb-4 text-xl font-bold'>当前时间戳</h2>
+						<h2 className='mb-4 text-xl font-bold'>
+							{t('timestampConverter.currentTimestamp')}
+						</h2>
 						<div className='mb-4 flex items-center'>
 							<Input value={secondLevelTimestamp} readOnly className='mr-2' />
 							<Button
 								variant='outline'
 								size='icon'
 								onClick={copyTimestamp}
-								title='复制'
+								title={t('timestampConverter.copy')}
 							>
 								<Copy className='h-4 w-4' />
 							</Button>
@@ -136,11 +140,13 @@ function RouteComponent() {
 						<Button variant='outline' onClick={togglePause} className='w-full'>
 							{isPaused ? (
 								<>
-									<Play className='mr-2 h-4 w-4' /> 继续
+									<Play className='mr-2 h-4 w-4' />{' '}
+									{t('timestampConverter.continue')}
 								</>
 							) : (
 								<>
-									<Pause className='mr-2 h-4 w-4' /> 暂停
+									<Pause className='mr-2 h-4 w-4' />{' '}
+									{t('timestampConverter.pause')}
 								</>
 							)}
 						</Button>
@@ -153,10 +159,12 @@ function RouteComponent() {
 				{/* Date to Timestamp Card */}
 				<Card>
 					<CardContent className='p-6'>
-						<h2 className='mb-4 text-xl font-bold'>日期转时间戳</h2>
+						<h2 className='mb-4 text-xl font-bold'>
+							{t('timestampConverter.dateToTimestamp')}
+						</h2>
 						<div className='mb-4'>
 							<label className='mb-1 block text-sm font-medium'>
-								输入日期时间
+								{t('timestampConverter.inputDateTime')}
 							</label>
 							<Input
 								type='input'
@@ -165,13 +173,13 @@ function RouteComponent() {
 								className='mb-4'
 							/>
 							<Button onClick={convertDateToTimestamp} className='w-full'>
-								转换
+								{t('timestampConverter.convert')}
 							</Button>
 						</div>
 						{convertedTimestamp && (
 							<div className='border-t pt-2'>
 								<label className='mb-1 block text-sm font-medium'>
-									转换结果
+									{t('timestampConverter.conversionResult')}
 								</label>
 								<div className='flex items-center'>
 									<Input value={convertedTimestamp} readOnly className='mr-2' />
@@ -182,9 +190,9 @@ function RouteComponent() {
 											navigator.clipboard.writeText(
 												convertedTimestamp.toString()
 											);
-											toast.success('已复制时间戳');
+											toast.success(t('timestampConverter.timestampCopied'));
 										}}
-										title='复制'
+										title={t('timestampConverter.copy')}
 									>
 										<Copy className='h-4 w-4' />
 									</Button>
@@ -197,42 +205,54 @@ function RouteComponent() {
 				{/* Timestamp to Date Card */}
 				<Card>
 					<CardContent className='p-6'>
-						<h2 className='mb-4 text-xl font-bold'>时间戳转日期</h2>
+						<h2 className='mb-4 text-xl font-bold'>
+							{t('timestampConverter.timestampToDate')}
+						</h2>
 						<div className='mb-4'>
 							<label className='mb-1 block text-sm font-medium'>
-								输入时间戳
+								{t('timestampConverter.inputTimestamp')}
 							</label>
 							<Input
 								type='number'
-								placeholder='例如: 1747977617089'
+								placeholder={t('timestampConverter.timestampExample')}
 								value={timestampInput}
 								onChange={e => setTimestampInput(e.target.value)}
 								className='mb-2'
 							/>
 
 							<label className='mt-3 mb-1 block text-sm font-medium'>
-								日期格式
+								{t('timestampConverter.dateFormat')}
 							</label>
 							<Select value={dateFormat} onValueChange={setDateFormat}>
 								<SelectTrigger className='mb-4'>
-									<SelectValue placeholder='选择日期格式' />
+									<SelectValue
+										placeholder={t('timestampConverter.selectDateFormat')}
+									/>
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value='default'>默认格式</SelectItem>
-									<SelectItem value='iso'>ISO格式</SelectItem>
-									<SelectItem value='locale'>本地格式</SelectItem>
-									<SelectItem value='utc'>UTC格式</SelectItem>
+									<SelectItem value='default'>
+										{t('timestampConverter.defaultFormat')}
+									</SelectItem>
+									<SelectItem value='iso'>
+										{t('timestampConverter.isoFormat')}
+									</SelectItem>
+									<SelectItem value='locale'>
+										{t('timestampConverter.localeFormat')}
+									</SelectItem>
+									<SelectItem value='utc'>
+										{t('timestampConverter.utcFormat')}
+									</SelectItem>
 								</SelectContent>
 							</Select>
 
 							<Button onClick={convertTimestampToDate} className='w-full'>
-								转换
+								{t('timestampConverter.convert')}
 							</Button>
 						</div>
 						{convertedDate && (
 							<div className='border-t pt-2'>
 								<label className='mb-1 block text-sm font-medium'>
-									转换结果
+									{t('timestampConverter.conversionResult')}
 								</label>
 								<div className='flex items-center'>
 									<Input value={convertedDate} readOnly className='mr-2' />
@@ -241,9 +261,9 @@ function RouteComponent() {
 										size='icon'
 										onClick={() => {
 											navigator.clipboard.writeText(convertedDate);
-											toast.success('已复制日期');
+											toast.success(t('timestampConverter.dateCopied'));
 										}}
-										title='复制'
+										title={t('timestampConverter.copy')}
 									>
 										<Copy className='h-4 w-4' />
 									</Button>

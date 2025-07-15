@@ -18,6 +18,7 @@ import { StateField, StateEffect } from '@codemirror/state';
 import { useDebounce } from '@uidotdev/usehooks';
 import { cn } from '@/lib/utils.ts';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
 
 const SlashLabel = (props: { className?: string }): ReactElement => {
 	const { className } = props;
@@ -34,48 +35,54 @@ const SlashLabel = (props: { className?: string }): ReactElement => {
 	);
 };
 
-// 常用正则表达式模式
-const commonRegexPatterns: CommonRegexPattern[] = [
+// Common regular expression patterns
+const getCommonRegexPatterns = (
+	t: (key: string) => string
+): CommonRegexPattern[] => [
 	{
-		name: '邮箱地址',
+		name: t('regexTester.emailPattern'),
 		pattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}',
 		flags: 'g'
 	},
 	{
-		name: '中国大陆手机号码',
+		name: t('regexTester.phonePattern'),
 		pattern: '(13\\d|14[579]|15[^4\\D]|17[^49\\D]|18\\d|19\\d)\\d{8}',
 		flags: 'g'
 	},
 	{
-		name: 'URL',
+		name: t('regexTester.urlPattern'),
 		pattern:
 			'https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*)',
 		flags: 'g'
 	},
 	{
-		name: '中国大陆身份证号',
+		name: t('regexTester.idCardPattern'),
 		pattern:
 			'[1-9]\\d{5}(?:19|20)\\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\\d|3[01])\\d{3}[\\dXx]',
 		flags: 'g'
 	},
 	{
-		name: 'IPv4地址',
+		name: t('regexTester.ipv4Pattern'),
 		pattern:
 			'(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)',
 		flags: 'g'
 	},
 	{
-		name: 'IPv6地址',
+		name: t('regexTester.ipv6Pattern'),
 		pattern:
 			'(?:(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?::[0-9a-fA-F]{1,4}){1,6}|:(?::[0-9a-fA-F]{1,4}){1,7}|:)',
 		flags: 'g'
 	},
 	{
-		name: '日期',
+		name: t('regexTester.datePattern'),
 		pattern: '\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])',
 		flags: 'g'
 	},
-	{ name: '中文字符', pattern: '[\u4e00-\u9fa5]+', flags: 'g' }
+	{
+		name: t('regexTester.chinesePattern'),
+		pattern: '[\u4e00-\u9fa5]+',
+		flags: 'g'
+	}
 ];
 
 export const Route = createFileRoute('/tools/regex-tester')({
@@ -114,6 +121,7 @@ const regexMatchField = StateField.define<DecorationSet>({
 });
 
 function RouteComponent() {
+	const { t } = useTranslation();
 	const editorRef = useRef<ReactCodeMirrorRef>(null);
 	const [regexPattern, setRegexPattern] = useState<string | undefined>('');
 	const [testText, setTestText] = useState<string | undefined>('');
@@ -121,11 +129,14 @@ function RouteComponent() {
 	const [matches, setMatches] = useState<RegExpMatchArray | null>(null);
 	const [error, setError] = useState<string | null>(null);
 
+	// Get common regex patterns with translations
+	const commonRegexPatterns = useMemo(() => getCommonRegexPatterns(t), [t]);
+
 	const debouncedPattern = useDebounce(regexPattern, 500);
 	const debouncedFlags = useDebounce(flags, 500);
 	const debouncedTestText = useDebounce(testText, 500);
 
-	// 配置 CodeMirror 扩展
+	// Configure CodeMirror extensions
 	const extensions = useMemo(
 		() => [
 			regexMatchField,
@@ -199,10 +210,12 @@ function RouteComponent() {
 					}
 				}
 			} catch (err) {
-				setError(`正则表达式错误: ${(err as Error).message}`);
+				setError(
+					t('regexTester.regexError', { message: (err as Error).message })
+				);
 				setMatches(null);
 
-				// 清除所有高亮
+				// Clear all highlights
 				if (editorRef.current?.view) {
 					editorRef.current.view.dispatch({
 						effects: setRegexMatches.of({ matches: null })
@@ -210,7 +223,7 @@ function RouteComponent() {
 				}
 			}
 		},
-		[]
+		[t]
 	);
 
 	// 处理常用正则表达式按钮点击
@@ -239,7 +252,7 @@ function RouteComponent() {
 									htmlFor='regex-pattern'
 									className='mb-2 block text-sm font-medium'
 								>
-									正则表达式
+									{t('regexTester.regexPattern')}
 								</Label>
 								<div className='flex items-center justify-start'>
 									<SlashLabel className='rounded-r-none border-r-0' />
@@ -247,7 +260,7 @@ function RouteComponent() {
 										id='regex-pattern'
 										value={regexPattern}
 										onChange={e => setRegexPattern(e.target.value)}
-										placeholder='输入正则表达式，例如: \b\w+\b'
+										placeholder={t('regexTester.patternPlaceholder')}
 										className='w-full max-w-[1000px] min-w-96 rounded-none'
 									/>
 									<SlashLabel className='rounded-none border-x-0' />
@@ -257,7 +270,7 @@ function RouteComponent() {
 											value={flags}
 											onChange={e => setFlags(e.target.value)}
 											className='w-16 rounded-l-none'
-											placeholder='标志'
+											placeholder={t('regexTester.flagsPlaceholder')}
 										/>
 									</div>
 								</div>
@@ -266,7 +279,7 @@ function RouteComponent() {
 
 						<div className='mt-4 mb-4'>
 							<Label className='mb-2 block text-sm font-medium'>
-								常用正则表达式
+								{t('regexTester.commonPatterns')}
 							</Label>
 							<div className='flex flex-wrap gap-2'>
 								{commonRegexPatterns.map((item, index) => (
@@ -297,7 +310,7 @@ function RouteComponent() {
 								htmlFor='test-text'
 								className='mb-2 block text-sm font-medium'
 							>
-								测试文本
+								{t('regexTester.testText')}
 							</Label>
 							<div className='bg-background flex w-full overflow-hidden rounded-md border'>
 								<CodeMirror
@@ -306,7 +319,7 @@ function RouteComponent() {
 									value={testText}
 									onChange={value => {
 										setTestText(value);
-										// 当文本变化时，清除高亮
+										// Clear highlights when text changes
 										if (editorRef.current?.view) {
 											editorRef.current.view.dispatch({
 												effects: setRegexMatches.of({ matches: null })
@@ -316,142 +329,152 @@ function RouteComponent() {
 									extensions={extensions}
 									theme={whiteLight}
 									height='200px'
-									placeholder='在此输入要测试的文本...'
+									placeholder={t('regexTester.testTextPlaceholder')}
 								/>
 							</div>
 							{matches && matches.length > 0 && (
 								<p className='mt-2 text-sm text-gray-600'>
-									找到 {matches.length} 个匹配项
+									{t('regexTester.matchesFound', { count: matches.length })}
 								</p>
 							)}
 						</div>
 					</div>
 
 					<div className='mt-8'>
-						<h3 className='mb-4 text-lg font-semibold'>语法参考</h3>
+						<h3 className='mb-4 text-lg font-semibold'>
+							{t('regexTester.syntaxReference')}
+						</h3>
 						<div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
 							<div className='rounded-md border p-4'>
-								<h4 className='mb-2 font-medium'>字符类</h4>
+								<h4 className='mb-2 font-medium'>
+									{t('regexTester.characterClasses')}
+								</h4>
 								<ul className='space-y-1 text-sm'>
 									<li>
-										<code>.</code> - 匹配除换行符外的任何单个字符
+										<code>.</code> - {t('regexTester.dotDesc')}
 									</li>
 									<li>
-										<code>\d</code> - 匹配任何数字字符 (0-9)
+										<code>\d</code> - {t('regexTester.digitDesc')}
 									</li>
 									<li>
-										<code>\D</code> - 匹配任何非数字字符
+										<code>\D</code> - {t('regexTester.nonDigitDesc')}
 									</li>
 									<li>
-										<code>\w</code> - 匹配任何字母数字字符 (a-z, A-Z, 0-9, _)
+										<code>\w</code> - {t('regexTester.wordDesc')}
 									</li>
 									<li>
-										<code>\W</code> - 匹配任何非字母数字字符
+										<code>\W</code> - {t('regexTester.nonWordDesc')}
 									</li>
 									<li>
-										<code>\s</code> - 匹配任何空白字符 (空格, 制表符, 换行符等)
+										<code>\s</code> - {t('regexTester.whitespaceDesc')}
 									</li>
 									<li>
-										<code>\S</code> - 匹配任何非空白字符
+										<code>\S</code> - {t('regexTester.nonWhitespaceDesc')}
 									</li>
 								</ul>
 							</div>
 							<div className='rounded-md border p-4'>
-								<h4 className='mb-2 font-medium'>量词</h4>
+								<h4 className='mb-2 font-medium'>
+									{t('regexTester.quantifiers')}
+								</h4>
 								<ul className='space-y-1 text-sm'>
 									<li>
-										<code>*</code> - 匹配前面的表达式 0 次或多次
+										<code>*</code> - {t('regexTester.starDesc')}
 									</li>
 									<li>
-										<code>+</code> - 匹配前面的表达式 1 次或多次
+										<code>+</code> - {t('regexTester.plusDesc')}
 									</li>
 									<li>
-										<code>?</code> - 匹配前面的表达式 0 次或 1 次
+										<code>?</code> - {t('regexTester.questionDesc')}
 									</li>
 									<li>
-										<code>{'{n}'}</code> - 匹配前面的表达式恰好 n 次
+										<code>{'{n}'}</code> - {t('regexTester.exactDesc')}
 									</li>
 									<li>
-										<code>{'{n,}'}</code> - 匹配前面的表达式至少 n 次
+										<code>{'{n,}'}</code> - {t('regexTester.minDesc')}
 									</li>
 									<li>
-										<code>{'{n,m}'}</code> - 匹配前面的表达式至少 n 次，最多 m
-										次
+										<code>{'{n,m}'}</code> - {t('regexTester.rangeDesc')}
 									</li>
 								</ul>
 							</div>
 							<div className='rounded-md border p-4'>
-								<h4 className='mb-2 font-medium'>锚点</h4>
+								<h4 className='mb-2 font-medium'>{t('regexTester.anchors')}</h4>
 								<ul className='space-y-1 text-sm'>
 									<li>
-										<code>^</code> - 匹配字符串的开头
+										<code>^</code> - {t('regexTester.startDesc')}
 									</li>
 									<li>
-										<code>$</code> - 匹配字符串的结尾
+										<code>$</code> - {t('regexTester.endDesc')}
 									</li>
 									<li>
-										<code>\b</code> - 匹配单词边界
+										<code>\b</code> - {t('regexTester.wordBoundaryDesc')}
 									</li>
 									<li>
-										<code>\B</code> - 匹配非单词边界
+										<code>\B</code> - {t('regexTester.nonWordBoundaryDesc')}
 									</li>
 								</ul>
 							</div>
 							<div className='rounded-md border p-4'>
-								<h4 className='mb-2 font-medium'>标志</h4>
+								<h4 className='mb-2 font-medium'>
+									{t('regexTester.flagsReference')}
+								</h4>
 								<ul className='space-y-1 text-sm'>
 									<li>
-										<code>g</code> - 全局匹配 (查找所有匹配项)
+										<code>g</code> - {t('regexTester.globalDesc')}
 									</li>
 									<li>
-										<code>i</code> - 忽略大小写
+										<code>i</code> - {t('regexTester.ignoreCaseDesc')}
 									</li>
 									<li>
-										<code>m</code> - 多行匹配
+										<code>m</code> - {t('regexTester.multilineDesc')}
 									</li>
 									<li>
-										<code>s</code> - 允许 . 匹配换行符
+										<code>s</code> - {t('regexTester.dotAllDesc')}
 									</li>
 									<li>
-										<code>u</code> - Unicode 模式
+										<code>u</code> - {t('regexTester.unicodeDesc')}
 									</li>
 									<li>
-										<code>y</code> - 粘性匹配
+										<code>y</code> - {t('regexTester.stickyDesc')}
 									</li>
 								</ul>
 							</div>
 							<div className='rounded-md border p-4'>
-								<h4 className='mb-2 font-medium'>分组和引用</h4>
+								<h4 className='mb-2 font-medium'>{t('regexTester.groups')}</h4>
 								<ul className='space-y-1 text-sm'>
 									<li>
-										<code>(xyz)</code> - 捕获组，匹配括号内的表达式
+										<code>(xyz)</code> - {t('regexTester.captureGroupDesc')}
 									</li>
 									<li>
-										<code>(?:xyz)</code> - 非捕获组
+										<code>(?:xyz)</code> -{' '}
+										{t('regexTester.nonCaptureGroupDesc')}
 									</li>
 									<li>
-										<code>\1, \2, ...</code> - 反向引用，引用之前的捕获组
+										<code>\1, \2, ...</code> -{' '}
+										{t('regexTester.backreferenceDesc')}
 									</li>
 								</ul>
 							</div>
 							<div className='rounded-md border p-4'>
-								<h4 className='mb-2 font-medium'>特殊字符</h4>
+								<h4 className='mb-2 font-medium'>
+									{t('regexTester.specialChars')}
+								</h4>
 								<ul className='space-y-1 text-sm'>
 									<li>
-										<code>|</code> - 或运算符，匹配 | 前或后的表达式
+										<code>|</code> - {t('regexTester.orDesc')}
 									</li>
 									<li>
-										<code>[xyz]</code> - 字符集，匹配括号内的任意一个字符
+										<code>[xyz]</code> - {t('regexTester.charSetDesc')}
 									</li>
 									<li>
-										<code>[^xyz]</code> -
-										否定字符集，匹配不在括号内的任意一个字符
+										<code>[^xyz]</code> - {t('regexTester.negatedCharSetDesc')}
 									</li>
 									<li>
-										<code>[a-z]</code> - 字符范围，匹配指定范围内的任意一个字符
+										<code>[a-z]</code> - {t('regexTester.charRangeDesc')}
 									</li>
 									<li>
-										<code>\</code> - 转义字符，用于匹配特殊字符本身
+										<code>\</code> - {t('regexTester.escapeDesc')}
 									</li>
 								</ul>
 							</div>

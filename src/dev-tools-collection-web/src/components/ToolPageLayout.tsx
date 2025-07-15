@@ -4,13 +4,15 @@ import ToolPageHeader from '@/components/ToolPageHeader.tsx';
 import { useDocumentTitle } from '@uidotdev/usehooks';
 import { useLocation } from '@tanstack/react-router';
 import { toolsData } from '@/data/tools.ts';
+import { useTranslation } from 'react-i18next';
 
 function ToolPageLayout(props: ToolPageLayoutProps): ReactElement {
 	const { children } = props;
+	const { t } = useTranslation();
 
 	const location = useLocation();
-	const toolName =
-		toolsData.find(tool => tool.url === location.pathname)?.name ?? '工具';
+	const toolId = toolsData.find(tool => tool.url === location.pathname)?.id;
+	const toolName = toolId ? t(`tools.${toolId}`) : t('common.tool');
 
 	useDocumentTitle(toolName);
 

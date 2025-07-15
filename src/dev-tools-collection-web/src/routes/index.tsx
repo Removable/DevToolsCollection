@@ -5,17 +5,19 @@ import PageSection from '@/components/PageSection';
 import SearchBar from '@/components/SearchBar.tsx';
 import ToolCard from '@/components/ToolCard.tsx';
 import Footer from '@/components/Footer.tsx';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/')({
 	component: Index
 });
 
 function Index() {
+	const { t } = useTranslation();
 	const [searchResults, setSearchResults] = useState<Tool[]>([]);
 	const [, setPopularTools] = useState<Tool[]>([]);
 
 	useEffect(() => {
-		// 初始化热门工具数据
+		// Initialize popular tools data
 		const popular = getPopularTools();
 		setPopularTools(popular);
 	}, []);
@@ -29,8 +31,8 @@ function Index() {
 			<main className='h-20 w-full flex-grow'>
 				{/* Hero Section with reduced height */}
 				<PageSection
-					title='在线工具箱'
-					description='提供各种实用工具，提高您的工作效率'
+					title={t('common.toolbox')}
+					description={t('common.description')}
 					gradient={true}
 				>
 					<SearchBar onSearchResults={handleSearchResults} />
@@ -41,7 +43,9 @@ function Index() {
 					{/* Search Results */}
 					{searchResults.length > 0 ? (
 						<div>
-							<h2 className='mb-4 text-2xl font-bold'>搜索结果</h2>
+							<h2 className='mb-4 text-2xl font-bold'>
+								{t('common.searchResults')}
+							</h2>
 							<div className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'>
 								{searchResults.map(tool => (
 									<ToolCard key={tool.id} tool={tool} />
@@ -50,7 +54,9 @@ function Index() {
 						</div>
 					) : (
 						<div>
-							<h2 className='mb-4 text-2xl font-bold'>所有工具</h2>
+							<h2 className='mb-4 text-2xl font-bold'>
+								{t('common.allTools')}
+							</h2>
 							<div className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'>
 								{toolsData.map(tool => (
 									<ToolCard key={tool.id} tool={tool} />

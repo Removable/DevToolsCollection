@@ -14,12 +14,14 @@ import {
 	Shield
 } from 'lucide-react';
 import useFetchIpInfoPage, { type IPInfo } from '@/hooks/useGetIpInfo.ts';
+import { useTranslation } from 'react-i18next';
 
 export const Route = createFileRoute('/tools/ip-info')({
 	component: IPInfoViewer
 });
 
 function IPInfoViewer() {
+	const { t } = useTranslation();
 	const [ipAddress, setIpAddress] = useState('');
 	const { loading: isLoading, getIpInfo } = useFetchIpInfoPage();
 
@@ -49,20 +51,18 @@ function IPInfoViewer() {
 			<div className='container mx-auto w-full px-4 py-8'>
 				<Card className='bg-card/50 border-border/40 w-full border p-6 shadow-lg backdrop-blur-sm'>
 					<div className='mb-6'>
-						<h2 className='mb-2 text-xl font-semibold'>IP 信息查看工具</h2>
-						<p className='text-muted-foreground'>
-							查看 IP 地址的详细信息，包括 ASN、地理位置、公司信息等。
-						</p>
+						<h2 className='mb-2 text-xl font-semibold'>{t('ipInfo.title')}</h2>
+						<p className='text-muted-foreground'>{t('ipInfo.description')}</p>
 					</div>
 
 					<div className='mb-6 flex gap-3'>
 						<div className='flex-grow'>
 							<Label htmlFor='ip-input' className='mb-2 block'>
-								输入 IP 地址
+								{t('ipInfo.inputIp')}
 							</Label>
 							<Input
 								id='ip-input'
-								placeholder='例如: 8.8.8.8'
+								placeholder={t('ipInfo.ipPlaceholder')}
 								value={ipAddress}
 								onChange={handleInputChange}
 								onKeyDown={handleKeyDown}
@@ -76,7 +76,7 @@ function IPInfoViewer() {
 								className='flex items-center gap-2'
 							>
 								<Search className='h-4 w-4' />
-								{isLoading ? '查询中...' : '查询'}
+								{isLoading ? t('ipInfo.searching') : t('ipInfo.search')}
 							</Button>
 							<Button
 								onClick={() => handleSearch(true)}
@@ -85,7 +85,7 @@ function IPInfoViewer() {
 								variant='outline'
 							>
 								<Globe className='h-4 w-4' />
-								{isLoading ? '查询中...' : '查询本机IP'}
+								{isLoading ? t('ipInfo.searching') : t('ipInfo.searchMyIp')}
 							</Button>
 						</div>
 					</div>
