@@ -9,7 +9,7 @@ const fetchIpInfo = async (ip?: string): Promise<IPInfo | null> => {
 		const doc = parser.parseFromString(htmlString, 'text/html');
 
 		// Actual IP
-		const actualIp = doc.querySelector('h1.leading-none')?.textContent;
+		const actualIp = doc.querySelector('h1.h1-data-pages')?.textContent;
 
 		const ipInfoTableRows = doc.querySelectorAll(
 			'table.table-striped tbody tr'
